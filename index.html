@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOMPAK — Komputer Praktikum Analisis Kelayakan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="kepala">
+    <div class="merek">
+      <span class="logo">K</span>
+      <div>
+        <h1>KOMPAK</h1>
+        <p>Komputer Praktikum Analisis Kelayakan · Sistem pakar forward chaining</p>
+      </div>
+    </div>
+    <nav class="tab" role="tablist">
+      <button role="tab" data-tab="diagnosa" class="aktif">Periksa PC</button>
+      <button role="tab" data-tab="basis">Basis pengetahuan</button>
+      <button role="tab" data-tab="pengujian">Pengujian</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ TAB 1: DIAGNOSA ============ -->
+    <section id="tab-diagnosa" class="panel-tab aktif">
+      <div class="tata">
+        <form id="formulir" class="formulir" novalidate>
+          <div class="alat">
+            <label class="isian">
+              <span>Nomor / nama PC</span>
+              <input id="nomor-pc" type="text" placeholder="contoh: PC-07 Lab Jaringan">
+            </label>
+            <label class="isian">
+              <span>Isi cepat dari skenario uji</span>
+              <select id="pilih-contoh"><option value="">— pilih skenario —</option></select>
+            </label>
+          </div>
+          <p class="arahan">Isi kesepuluh indikator sesuai hasil pengamatan, lalu tekan <b>Periksa kelayakan</b>.</p>
+          <div id="daftar-indikator" class="daftar-indikator"></div>
+          <div class="tombol-bawah">
+            <button type="button" id="tombol-normal" class="tombol sekunder">Isi semua normal</button>
+            <button type="reset" class="tombol sekunder">Kosongkan</button>
+            <button type="submit" class="tombol utama">Periksa kelayakan</button>
+          </div>
+        </form>
+
+        <aside id="hasil" class="hasil" aria-live="polite">
+          <div class="kosong">
+            <p class="mono">MENUNGGU FAKTA</p>
+            <p>Hasil pemeriksaan, aturan yang mendukung, dan tindakan akan tampil di sini.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ TAB 2: BASIS PENGETAHUAN ============ -->
+    <section id="tab-basis" class="panel-tab">
+      <div class="kartu">
+        <h2>Kesimpulan dan prioritas</h2>
+        <p class="arahan">Jika beberapa aturan terpicu, status terberat yang dipakai: <b>K3 › K4 › K2 › K1</b>.</p>
+        <div id="tabel-kesimpulan"></div>
+      </div>
+      <div class="kartu">
+        <h2>Indikator masukan</h2>
+        <div id="tabel-indikator"></div>
+      </div>
+      <div class="kartu">
+        <h2>Aturan IF–THEN</h2>
+        <div id="tabel-aturan"></div>
+      </div>
+      <div class="kartu">
+        <h2>Sumber pengetahuan</h2>
+        <ol id="daftar-sumber" class="sumber"></ol>
+      </div>
+    </section>
+
+    <!-- ============ TAB 3: PENGUJIAN ============ -->
+    <section id="tab-pengujian" class="panel-tab">
+      <div class="kartu">
+        <div class="judul-uji">
+          <div>
+            <h2>10 skenario uji</h2>
+            <p class="arahan">Setiap skenario dijalankan langsung ke mesin inferensi, lalu hasilnya dibandingkan dengan hasil yang diharapkan.</p>
+          </div>
+          <div id="ringkasan-uji" class="ringkasan-uji"></div>
+        </div>
+        <div id="tabel-uji"></div>
+        <button type="button" id="tombol-uji" class="tombol utama">Jalankan ulang pengujian</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="kaki">KOMPAK · Tugas Proyek Kecerdasan Buatan · Teknik Komputer UNM 2026</footer>
+
+  <script src="js/basis-pengetahuan.js"></script>
+  <script src="js/mesin-inferensi.js"></script>
+  <script src="js/skenario-uji.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
