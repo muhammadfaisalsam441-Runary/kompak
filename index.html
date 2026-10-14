@@ -3,62 +3,100 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>KOMPAK — Komputer Praktikum Analisis Kelayakan</title>
+  <meta name="color-scheme" content="dark">
+  <title>Periksa PC · KOMPAK</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236EB5FF'/%3E%3Ctext x='16' y='24' font-size='22' font-weight='700' text-anchor='middle' font-family='Arial' fill='%230E1726'%3EK%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <a class="lewati" href="#utama">Lewati ke konten</a>
+
   <header class="kepala">
     <div class="merek">
-      <span class="logo">K</span>
+      <span class="logo" aria-hidden="true">K</span>
       <div>
         <h1>KOMPAK</h1>
         <p>Komputer Praktikum Analisis Kelayakan · Sistem pakar forward chaining</p>
       </div>
     </div>
-    <nav class="tab" role="tablist">
-      <button role="tab" data-tab="diagnosa" class="aktif">Periksa PC</button>
-      <button role="tab" data-tab="basis">Basis pengetahuan</button>
-      <button role="tab" data-tab="pengujian">Pengujian</button>
+    <nav class="tab" role="tablist" aria-label="Bagian aplikasi">
+      <button role="tab" id="btn-diagnosa" data-tab="diagnosa" class="aktif" aria-selected="true" aria-controls="tab-diagnosa">Periksa PC</button>
+      <button role="tab" id="btn-basis" data-tab="basis" aria-selected="false" aria-controls="tab-basis" tabindex="-1">Basis pengetahuan</button>
+      <button role="tab" id="btn-pengujian" data-tab="pengujian" aria-selected="false" aria-controls="tab-pengujian" tabindex="-1">Pengujian</button>
     </nav>
   </header>
 
-  <main>
+  <main id="utama" tabindex="-1">
     <!-- ============ TAB 1: DIAGNOSA ============ -->
-    <section id="tab-diagnosa" class="panel-tab aktif">
+    <section id="tab-diagnosa" class="panel-tab aktif" role="tabpanel" aria-labelledby="btn-diagnosa">
       <div class="tata">
         <form id="formulir" class="formulir" novalidate>
-          <div class="alat">
-            <label class="isian">
-              <span>Nomor / nama PC</span>
-              <input id="nomor-pc" type="text" placeholder="contoh: PC-07 Lab Jaringan">
-            </label>
-            <label class="isian">
-              <span>Isi cepat dari skenario uji</span>
-              <select id="pilih-contoh"><option value="">— pilih skenario —</option></select>
-            </label>
+          <label class="isian">
+            <span>Nomor / nama PC</span>
+            <input id="nomor-pc" type="text" autocomplete="off" placeholder="contoh: PC-07 Lab Jaringan">
+          </label>
+
+          <details class="demo">
+            <summary>Mode demo: isi cepat dari skenario uji</summary>
+            <div class="demo-isi">
+              <label class="isian">
+                <span>Skenario</span>
+                <select id="pilih-contoh"><option value="">— pilih skenario —</option></select>
+              </label>
+              <button type="button" id="tombol-normal" class="tombol sekunder">Isi semua normal</button>
+            </div>
+          </details>
+
+          <div id="banner-otomatis" class="banner-otomatis" role="note" hidden>
+            <span aria-hidden="true">⚠</span>
+            <p>Isian terisi otomatis dari mode demo. Untuk pemeriksaan nyata, pastikan setiap indikator sudah sesuai hasil pengamatan langsung pada PC.</p>
           </div>
-          <p class="arahan">Isi kesepuluh indikator sesuai hasil pengamatan, lalu tekan <b>Periksa kelayakan</b>.</p>
+
+          <h2 class="sr-only">Indikator pemeriksaan</h2>
+          <p class="arahan">Amati PC, lalu pilih kondisi yang sesuai untuk kesepuluh indikator.</p>
           <div id="daftar-indikator" class="daftar-indikator"></div>
-          <div class="tombol-bawah">
-            <button type="button" id="tombol-normal" class="tombol sekunder">Isi semua normal</button>
-            <button type="reset" class="tombol sekunder">Kosongkan</button>
-            <button type="submit" class="tombol utama">Periksa kelayakan</button>
+
+          <div class="bar-aksi">
+            <div class="progres">
+              <span id="teks-progres" class="progres-teks">0 dari 10 indikator terisi</span>
+              <div class="progres-bar" aria-hidden="true"><i id="isi-progres"></i></div>
+            </div>
+            <div class="tombol-grup">
+              <button type="reset" class="tombol ghost">Kosongkan</button>
+              <button type="submit" class="tombol utama">Periksa kelayakan</button>
+            </div>
           </div>
         </form>
 
-        <aside id="hasil" class="hasil" aria-live="polite">
-          <div class="kosong">
-            <p class="mono">MENUNGGU FAKTA</p>
-            <p>Hasil pemeriksaan, aturan yang mendukung, dan tindakan akan tampil di sini.</p>
+        <aside id="hasil" class="hasil belum" aria-label="Hasil pemeriksaan">
+          <div id="peringatan-basi" class="peringatan-basi" hidden>
+            <span aria-hidden="true">↻</span>
+            <p>Isian sudah berubah sejak pemeriksaan terakhir. Tekan <b>Periksa kelayakan</b> untuk memperbarui hasil.</p>
           </div>
+          <div id="isi-hasil"></div>
         </aside>
+        <p id="pengumuman" class="sr-only" role="status" aria-live="polite"></p>
       </div>
+
+      <section id="riwayat" class="kartu riwayat" hidden aria-labelledby="judul-riwayat">
+        <div class="judul-uji">
+          <div>
+            <h2 id="judul-riwayat">Riwayat pemeriksaan sesi ini</h2>
+            <p class="arahan">Tersimpan sementara selama halaman ini terbuka. Ekspor ke CSV jika perlu disimpan.</p>
+          </div>
+          <div class="tombol-grup">
+            <button type="button" id="ekspor-csv" class="tombol sekunder">Ekspor CSV</button>
+            <button type="button" id="hapus-riwayat" class="tombol ghost">Hapus riwayat</button>
+          </div>
+        </div>
+        <div id="tabel-riwayat"></div>
+      </section>
     </section>
 
     <!-- ============ TAB 2: BASIS PENGETAHUAN ============ -->
-    <section id="tab-basis" class="panel-tab">
+    <section id="tab-basis" class="panel-tab" role="tabpanel" aria-labelledby="btn-basis">
       <div class="kartu">
         <h2>Kesimpulan dan prioritas</h2>
         <p class="arahan">Jika beberapa aturan terpicu, status terberat yang dipakai: <b>K3 › K4 › K2 › K1</b>.</p>
@@ -79,14 +117,14 @@
     </section>
 
     <!-- ============ TAB 3: PENGUJIAN ============ -->
-    <section id="tab-pengujian" class="panel-tab">
+    <section id="tab-pengujian" class="panel-tab" role="tabpanel" aria-labelledby="btn-pengujian">
       <div class="kartu">
         <div class="judul-uji">
           <div>
             <h2>10 skenario uji</h2>
-            <p class="arahan">Setiap skenario dijalankan langsung ke mesin inferensi, lalu hasilnya dibandingkan dengan hasil yang diharapkan.</p>
+            <p class="arahan">Halaman evaluasi untuk dosen dan pengembang, bukan untuk pemeriksaan PC sehari-hari. Setiap skenario dijalankan langsung ke mesin inferensi, lalu dibandingkan dengan hasil yang diharapkan.</p>
           </div>
-          <div id="ringkasan-uji" class="ringkasan-uji"></div>
+          <div id="ringkasan-uji" class="ringkasan-uji" aria-live="polite"></div>
         </div>
         <div id="tabel-uji"></div>
         <button type="button" id="tombol-uji" class="tombol utama">Jalankan ulang pengujian</button>

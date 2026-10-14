@@ -15,6 +15,10 @@ Tidak perlu instalasi, server, database, atau koneksi internet.
 3. Isi 10 indikator, lalu tekan **Periksa kelayakan**.
    Untuk demo cepat, pilih salah satu skenario di menu **Isi cepat dari skenario uji**.
 
+Alur untuk memeriksa banyak PC: setelah hasil muncul, tekan **Periksa PC berikutnya** (nomor PC bertambah otomatis).
+Semua pemeriksaan tercatat di tabel **Riwayat** dan bisa diekspor ke CSV (pemisah titik koma, cocok untuk Excel berlokal Indonesia).
+Menu **Isi cepat dari skenario uji** ada di bagian *Mode demo* yang dilipat.
+
 Menjalankan 10 skenario uji dari terminal (opsional, perlu [Node.js](https://nodejs.org)):
 
 ```
@@ -136,7 +140,7 @@ Kesimpulan ini hanya berlaku untuk skenario yang diuji.
 
 - Masukan berupa kategori hasil pengamatan; ketepatan bergantung pada ketelitian asisten saat mengamati.
 - Kombinasi yang tidak tercakup (misalnya booting lambat tanpa sebab yang tercatat) belum bisa disimpulkan.
-- Tidak menyimpan riwayat pemeriksaan (tanpa database); hasil bisa dicetak lewat menu cetak peramban.
+- Riwayat pemeriksaan hanya disimpan di memori selama halaman terbuka (tanpa database); gunakan **Ekspor CSV** untuk menyimpannya. Hasil bisa dicetak lewat tombol **Cetak hasil**.
 - Objek terbatas pada PC desktop laboratorium.
 
 ## Anggota kelompok
