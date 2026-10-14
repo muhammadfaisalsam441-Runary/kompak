@@ -206,7 +206,6 @@ td code { font-family: var(--mono); font-size: 12.5px; color: var(--teks-2); bac
 .ringkasan-uji { text-align: right; }
 .ringkasan-uji b { font-size: 36px; font-weight: 700; line-height: 1; color: var(--aksen); display: block; }
 .ringkasan-uji span { color: var(--teks-2); font-size: 13px; }
-#tombol-uji { margin-top: 16px; }
 
 /* ---------- Responsif ---------- */
 @media (max-width: 980px) {

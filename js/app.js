@@ -432,5 +432,4 @@
           h.lulus ? '<span class="lulus">✓ SESUAI</span>' : '<span class="gagal">✕ TIDAK</span>'];
       }));
   }
-  $("#tombol-uji").addEventListener("click", tampilkanPengujian);
 })();
