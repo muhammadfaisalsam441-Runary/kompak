@@ -1,6 +1,6 @@
 # KOMPAK — Komputer Praktikum Analisis Kelayakan
 
-Sistem pakar berbasis web untuk menentukan **kelayakan komputer laboratorium sebelum praktikum**.
+Sistem pakar berbasis web untuk menentukan **kelayakan komputer laboratorium pemrograman sebelum praktikum** (VS Code, Python, C++, Java, JavaScript, dan XAMPP).
 Asisten lab mengisi 10 indikator hasil pengamatan; sistem menarik kesimpulan dengan **forward chaining**
 atas 12 aturan IF–THEN, lalu menampilkan status, aturan pendukung, dan tindakan yang disarankan.
 
@@ -76,11 +76,11 @@ Basis pengetahuan dipisah dari mesin inferensi: untuk menambah atau mengubah atu
 | I2 | Suhu dan kipas | Normal / Panas atau berisik / Mati mendadak |
 | I3 | Monitor | Normal / Bergaris atau berkedip / Tidak tampil |
 | I4 | Keyboard dan mouse | Berfungsi / Sebagian bermasalah / Tidak berfungsi |
-| I5 | Koneksi LAN | Terhubung / Putus-sambung / Tidak terhubung |
-| I6 | Kapasitas RAM | Memenuhi / Di bawah kebutuhan praktikum |
-| I7 | Ruang kosong drive sistem | Cukup (≥ 20 GB) / Kurang dari 20 GB |
-| I8 | Kesehatan penyimpanan (CrystalDiskInfo) | Baik / Peringatan / Buruk |
-| I9 | Aplikasi praktikum | Berjalan normal / Belum terpasang / Error saat dibuka |
+| I5 | Kapasitas RAM | Memenuhi (≥ 8 GB) / Kurang dari 8 GB |
+| I6 | Kesehatan penyimpanan (CrystalDiskInfo) | Baik / Peringatan / Buruk |
+| I7 | VS Code dan ekstensi | Normal / Ekstensi kurang / Tidak terpasang atau error |
+| I8 | Compiler/runtime bahasa (Python, g++, JDK, Node.js) | Berjalan / Tidak dikenali di terminal (PATH) / Tidak terpasang |
+| I9 | XAMPP (Apache dan MySQL) | Tidak dipakai hari ini / Berjalan normal / Port bentrok / Gagal dijalankan |
 | I10 | Antivirus | Bersih / Terdeteksi ancaman |
 
 ### Kesimpulan (keluaran)
@@ -100,37 +100,39 @@ Basis pengetahuan dipisah dari mesin inferensi: untuk menambah atau mengubah atu
 | R1 | I1 = Gagal | K3 |
 | R2 | I2 = Mati mendadak | K3 |
 | R3 | I3 = Tidak tampil OR I4 = Tidak berfungsi | K3 |
-| R4 | I5 = Tidak terhubung | K3 |
-| R5 | I8 = Buruk | K3 |
-| R6 | I9 = Error OR I9 = Belum terpasang | K3 |
+| R4 | I6 = Buruk | K3 |
+| R5 | I7 = Tidak terpasang/error OR I8 = Tidak terpasang | K3 |
+| R6 | I9 = Gagal dijalankan | K3 |
 | R7 | I10 = Terdeteksi | K3 |
-| R8 | (I6 = Di bawah OR I8 = Peringatan) AND I1 = Lambat | K4 |
-| R9 | (I6 = Di bawah OR I8 = Peringatan) AND I1 = Normal | K2 |
-| R10 | I7 = Kurang dari 20 GB OR I2 = Panas/berisik | K2 |
-| R11 | I3 = Bergaris OR I4 = Sebagian OR I5 = Putus-sambung | K2 |
-| R12 | Semua indikator normal | K1 |
+| R8 | (I5 = Kurang OR I6 = Peringatan) AND I1 = Lambat | K4 |
+| R9 | (I5 = Kurang OR I6 = Peringatan) AND I1 = Normal | K2 |
+| R10 | I7 = Ekstensi kurang OR I8 = PATH OR I9 = Port bentrok | K2 |
+| R11 | I2 = Panas/berisik OR I3 = Bergaris OR I4 = Sebagian | K2 |
+| R12 | Semua indikator normal (XAMPP boleh tidak dipakai atau berjalan) | K1 |
 
 ### Sumber pengetahuan
 
-- Pengalaman pemeriksaan komputer laboratorium dan wawancara dengan laboran/teknisi lab.
+- Pengalaman pemeriksaan komputer laboratorium pemrograman dan wawancara dengan laboran/teknisi lab.
 - Afdal, dkk. (2026). *Pendas: Jurnal Ilmiah Pendidikan Dasar*, 11(01), 135–148. doi:10.23969/jp.v11i01.42815
 - Anita, dkk. (2026). *JATI*, 10(2), 2281–2286. doi:10.36040/jati.v10i2.17226
 - Firdaus & Asyiah (2026). *Jurnal Ilmu Komputer*, 4(2), 246–262.
+- Prastomo, dkk. (2026). *RIGGS: Journal of Artificial Intelligence and Digital Business*, 5(1), 1161–1167. doi:10.31004/riggs.v5i1.6072
 - Saputra, dkk. (2022). *Jurnal JTIK*, 6(2), 234–242. doi:10.35870/jtik.v6i2.416
+- Septian Isna & Ardiansyah (2024). *JUSTINDO*, 9(1), 46–54. doi:10.32528/justindo.v9i1.1224
 
 ## Hasil pengujian
 
 | No | Jenis | Masukan (lainnya normal) | Diharapkan | Hasil sistem | Status |
 |---|---|---|---|---|---|
-| S1 | Umum | Semua normal | K1 (R12) | K1 (R12) | Sesuai |
-| S2 | Umum | I7 = Kurang dari 20 GB | K2 (R10) | K2 (R10) | Sesuai |
+| S1 | Umum | Semua normal, XAMPP berjalan | K1 (R12) | K1 (R12) | Sesuai |
+| S2 | Umum | I8 = Tidak dikenali di terminal (PATH) | K2 (R10) | K2 (R10) | Sesuai |
 | S3 | Umum | I1 = Gagal | K3 (R1) | K3 (R1) | Sesuai |
-| S4 | Umum | I9 = Belum terpasang | K3 (R6) | K3 (R6) | Sesuai |
-| S5 | Umum | I6 = Di bawah, I1 = Lambat | K4 (R8) | K4 (R8) | Sesuai |
-| S6 | Batas | I6 = Di bawah, I8 = Peringatan, I1 = Normal | K2 (R9) | K2 (R9) | Sesuai |
-| S7 | Konflik | I6 = Di bawah, I1 = Lambat, I10 = Terdeteksi | K3 (R7) | K3 (R7 menang atas R8) | Sesuai |
+| S4 | Umum | I8 = Tidak terpasang | K3 (R5) | K3 (R5) | Sesuai |
+| S5 | Umum | I5 = Kurang, I1 = Lambat | K4 (R8) | K4 (R8) | Sesuai |
+| S6 | Batas | I5 = Kurang, I6 = Peringatan, I1 = Normal | K2 (R9) | K2 (R9) | Sesuai |
+| S7 | Konflik | I5 = Kurang, I1 = Lambat, I10 = Terdeteksi | K3 (R7) | K3 (R7 menang atas R8) | Sesuai |
 | S8 | Tanpa aturan | I1 = Lambat saja | Belum dapat disimpulkan | Belum dapat disimpulkan | Sesuai |
-| S9 | Tidak valid | I5 kosong | Pesan validasi | Ditolak: I5 belum diisi | Sesuai |
+| S9 | Tidak valid | I8 kosong | Pesan validasi | Ditolak: I8 belum diisi | Sesuai |
 | S10 | Tidak valid | I1 = "rusak_parah" | Masukan ditolak | Ditolak: nilai tidak dikenal | Sesuai |
 
 Kesesuaian: **10/10 (100%)** terhadap hasil yang diharapkan pada skenario di atas.
@@ -141,7 +143,8 @@ Kesimpulan ini hanya berlaku untuk skenario yang diuji.
 - Masukan berupa kategori hasil pengamatan; ketepatan bergantung pada ketelitian asisten saat mengamati.
 - Kombinasi yang tidak tercakup (misalnya booting lambat tanpa sebab yang tercatat) belum bisa disimpulkan.
 - Riwayat pemeriksaan hanya disimpan di memori selama halaman terbuka (tanpa database); gunakan **Ekspor CSV** untuk menyimpannya. Hasil bisa dicetak lewat tombol **Cetak hasil**.
-- Objek terbatas pada PC desktop laboratorium.
+- Objek terbatas pada PC desktop laboratorium pemrograman. Ambang RAM 8 GB dan booting 3 menit masih ditetapkan kelompok dan perlu dikonfirmasi laboran.
+- Indikator compiler/runtime memeriksa bahasa yang dipakai pada sesi itu saja, bukan keempat bahasa sekaligus.
 
 ## Anggota kelompok
 

@@ -1,5 +1,5 @@
 /*
- * KOMPAK — 10 Skenario Uji
+ * KOMPAK — 10 Skenario Uji (Laboratorium Pemrograman)
  * ---------------------------------------------------------------
  * Setiap skenario: indikator yang tidak disebut bernilai NORMAL.
  * harapan.status   : kode kesimpulan yang diharapkan ("-" = belum dapat disimpulkan)
@@ -10,8 +10,8 @@
   "use strict";
 
   var NORMAL = {
-    I1: "normal", I2: "normal", I3: "normal", I4: "berfungsi", I5: "terhubung",
-    I6: "memenuhi", I7: "cukup", I8: "baik", I9: "normal", I10: "bersih"
+    I1: "normal", I2: "normal", I3: "normal", I4: "berfungsi", I5: "memenuhi",
+    I6: "baik", I7: "normal", I8: "berjalan", I9: "tidak_dipakai", I10: "bersih"
   };
 
   function dengan(ubah) {
@@ -24,24 +24,24 @@
   }
 
   var skenario = [
-    { id: "S1", jenis: "Umum", uraian: "Semua indikator normal",
-      fakta: dengan({}), harapan: { valid: true, status: "K1", aturan: ["R12"] } },
-    { id: "S2", jenis: "Umum", uraian: "I7 = Kurang dari 20 GB",
-      fakta: dengan({ I7: "kurang" }), harapan: { valid: true, status: "K2", aturan: ["R10"] } },
+    { id: "S1", jenis: "Umum", uraian: "Semua normal, XAMPP berjalan",
+      fakta: dengan({ I9: "berjalan" }), harapan: { valid: true, status: "K1", aturan: ["R12"] } },
+    { id: "S2", jenis: "Umum", uraian: "I8 = Tidak dikenali di terminal (PATH)",
+      fakta: dengan({ I8: "path" }), harapan: { valid: true, status: "K2", aturan: ["R10"] } },
     { id: "S3", jenis: "Umum", uraian: "I1 = Gagal booting",
       fakta: dengan({ I1: "gagal" }), harapan: { valid: true, status: "K3", aturan: ["R1"] } },
-    { id: "S4", jenis: "Umum", uraian: "I9 = Belum terpasang",
-      fakta: dengan({ I9: "belum_terpasang" }), harapan: { valid: true, status: "K3", aturan: ["R6"] } },
-    { id: "S5", jenis: "Umum", uraian: "I6 = Di bawah kebutuhan, I1 = Lambat",
-      fakta: dengan({ I6: "kurang", I1: "lambat" }), harapan: { valid: true, status: "K4", aturan: ["R8"] } },
-    { id: "S6", jenis: "Batas", uraian: "I6 = Di bawah, I8 = Peringatan, I1 = Normal",
-      fakta: dengan({ I6: "kurang", I8: "peringatan" }), harapan: { valid: true, status: "K2", aturan: ["R9"] } },
-    { id: "S7", jenis: "Konflik", uraian: "I6 = Di bawah, I1 = Lambat, I10 = Terdeteksi",
-      fakta: dengan({ I6: "kurang", I1: "lambat", I10: "terdeteksi" }), harapan: { valid: true, status: "K3", aturan: ["R7"] } },
+    { id: "S4", jenis: "Umum", uraian: "I8 = Compiler/runtime tidak terpasang",
+      fakta: dengan({ I8: "tidak_terpasang" }), harapan: { valid: true, status: "K3", aturan: ["R5"] } },
+    { id: "S5", jenis: "Umum", uraian: "I5 = RAM < 8 GB, I1 = Lambat",
+      fakta: dengan({ I5: "kurang", I1: "lambat" }), harapan: { valid: true, status: "K4", aturan: ["R8"] } },
+    { id: "S6", jenis: "Batas", uraian: "I5 = RAM < 8 GB, I6 = Peringatan, I1 = Normal",
+      fakta: dengan({ I5: "kurang", I6: "peringatan" }), harapan: { valid: true, status: "K2", aturan: ["R9"] } },
+    { id: "S7", jenis: "Konflik", uraian: "I5 = RAM < 8 GB, I1 = Lambat, I10 = Terdeteksi",
+      fakta: dengan({ I5: "kurang", I1: "lambat", I10: "terdeteksi" }), harapan: { valid: true, status: "K3", aturan: ["R7"] } },
     { id: "S8", jenis: "Tanpa aturan", uraian: "I1 = Lambat saja",
       fakta: dengan({ I1: "lambat" }), harapan: { valid: true, status: "-", aturan: [] } },
-    { id: "S9", jenis: "Tidak valid", uraian: "I5 tidak diisi (kosong)",
-      fakta: dengan({ I5: undefined }), harapan: { valid: false } },
+    { id: "S9", jenis: "Tidak valid", uraian: "I8 tidak diisi (kosong)",
+      fakta: dengan({ I8: undefined }), harapan: { valid: false } },
     { id: "S10", jenis: "Tidak valid", uraian: "I1 = \"rusak_parah\" (di luar pilihan)",
       fakta: dengan({ I1: "rusak_parah" }), harapan: { valid: false } }
   ];
