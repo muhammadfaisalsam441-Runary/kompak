@@ -2,7 +2,7 @@
  * =============================================================================
  * KOMPAK — Antarmuka Pengguna & Logika Tampilan (UI/UX Controller)
  * Menghubungkan formulir observasi laboratorium dengan mesin inferensi
- * forward chaining dan menyajikan hasil diagnosis secara transparan (Explainable AI).
+ * forward chaining dan menyajikan hasil diagnosis secara transparan.
  * =============================================================================
  */
 (function () {
@@ -34,8 +34,37 @@
     }, 2800);
   }
 
+  function salinTeks(teks, pesanSukses) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(teks).then(function () {
+        showToast(pesanSukses || "Berhasil disalin ke clipboard!");
+      });
+    } else {
+      var ta = document.createElement("textarea");
+      ta.value = teks;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      showToast(pesanSukses || "Berhasil disalin ke clipboard!");
+    }
+  }
+
   // Simbol per status untuk aksesibilitas dan cetak
   var IKON = { K1: "✓", K2: "!", K4: "↻", K3: "✕", "-": "?" };
+
+  var IKON_INDIKATOR = {
+    I1: "ri-flashlight-line",
+    I2: "ri-temp-hot-line",
+    I3: "ri-tv-2-line",
+    I4: "ri-keyboard-box-line",
+    I5: "ri-cpu-line",
+    I6: "ri-hard-drive-2-line",
+    I7: "ri-code-box-line",
+    I8: "ri-terminal-box-line",
+    I9: "ri-server-line",
+    I10: "ri-file-shield-2-line"
+  };
 
   function labelStatus(s) {
     return '<span class="label ' + s.warna + '"><span aria-hidden="true">' + (IKON[s.kode] || "") + "</span> " +
@@ -66,7 +95,7 @@
       }).join("") + "</tbody></table></div>";
   }
 
-  // Nilai yang muncul pada aturan K3 diberi warna merah pada tombol pilihan
+  // Nilai yang muncul pada aturan K3 diberi penanda kritis
   var nilaiParah = {};
   KB.aturan.filter(function (r) { return r.maka === "K3"; }).forEach(function (r) {
     (function kumpul(k) {
@@ -75,9 +104,99 @@
     })(r.kondisi);
   });
 
-  // ---------- Navigasi Tab Modern ----------
+  // ---------- Tema Terang / Gelap ----------
+  var btnTema = $("#btn-tema");
+  function terapkanTema(tema) {
+    document.documentElement.setAttribute("data-theme", tema);
+    if (btnTema) {
+      var ic = btnTema.querySelector("i");
+      if (ic) ic.className = tema === "dark" ? "ri-sun-line" : "ri-moon-line";
+      btnTema.title = tema === "dark" ? "Ganti ke tema Terang" : "Ganti ke tema Gelap";
+    }
+    try { localStorage.setItem("kompak_tema", tema); } catch (e) {}
+  }
+  try {
+    var savedTema = localStorage.getItem("kompak_tema");
+    if (savedTema === "dark" || savedTema === "light") terapkanTema(savedTema);
+  } catch (e) {}
+  if (btnTema) {
+    btnTema.addEventListener("click", function () {
+      var cur = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+      terapkanTema(cur === "dark" ? "light" : "dark");
+    });
+  }
+
+  // ---------- Panduan Strip & Collapsible Demo & Modal Cara Pakai ----------
+  var togglePanduanStrip = $("#toggle-panduan-strip");
+  var panduanStepsBody = $("#panduan-steps-body");
+  if (togglePanduanStrip && panduanStepsBody) {
+    togglePanduanStrip.addEventListener("click", function () {
+      var hidden = !panduanStepsBody.hidden;
+      panduanStepsBody.hidden = hidden;
+      togglePanduanStrip.setAttribute("aria-expanded", String(!hidden));
+      togglePanduanStrip.innerHTML = hidden
+        ? '<i class="ri-eye-line"></i> <span>Tampilkan Alur</span>'
+        : '<i class="ri-eye-off-line"></i> <span>Sembunyikan</span>';
+    });
+  }
+
+  var toggleDemo = $("#toggle-demo");
+  var demoBody = $("#demo-body");
+  if (toggleDemo && demoBody) {
+    toggleDemo.addEventListener("click", function () {
+      var hidden = !demoBody.hidden;
+      demoBody.hidden = hidden;
+      toggleDemo.setAttribute("aria-expanded", String(!hidden));
+      toggleDemo.innerHTML = hidden
+        ? '<i class="ri-arrow-down-s-line"></i> <span>Buka Simulasi</span>'
+        : '<i class="ri-arrow-up-s-line"></i> <span>Lipat</span>';
+    });
+  }
+
+  var modalPanduan = $("#modal-panduan");
+  var btnPanduan = $("#btn-panduan");
+  var tutupPanduan = $("#tutup-panduan");
+  var btnMulaiPanduan = $("#btn-mulai-panduan");
+
+  function bukaModalPanduan() {
+    if (!modalPanduan) return;
+    modalPanduan.hidden = false;
+    document.body.style.overflow = "hidden";
+    if (tutupPanduan) tutupPanduan.focus();
+  }
+  function tutupModalPanduan() {
+    if (!modalPanduan) return;
+    modalPanduan.hidden = true;
+    document.body.style.overflow = "";
+    if (btnPanduan) btnPanduan.focus();
+  }
+
+  if (btnPanduan) btnPanduan.addEventListener("click", bukaModalPanduan);
+  if (tutupPanduan) tutupPanduan.addEventListener("click", tutupModalPanduan);
+  if (btnMulaiPanduan) btnMulaiPanduan.addEventListener("click", tutupModalPanduan);
+  if (modalPanduan) {
+    modalPanduan.addEventListener("click", function (e) {
+      if (e.target === modalPanduan) tutupModalPanduan();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !modalPanduan.hidden) tutupModalPanduan();
+    });
+  }
+
+  // ---------- Navigasi Tab & Menu Mobile ----------
   var tautanTab = $$("[data-tab]");
   var menuTab = tautanTab.filter(function (x) { return x.closest(".menu-tab"); });
+  var mobileMenuBtn = $("#mobile-menu-btn");
+  var navTabWrapper = $("#nav-tab-wrapper");
+
+  if (mobileMenuBtn && navTabWrapper) {
+    mobileMenuBtn.addEventListener("click", function () {
+      var open = navTabWrapper.classList.toggle("mobile-open");
+      mobileMenuBtn.setAttribute("aria-expanded", String(open));
+      var ic = mobileMenuBtn.querySelector("i");
+      if (ic) ic.className = open ? "ri-close-line" : "ri-menu-line";
+    });
+  }
 
   function aktifkanTab(nama) {
     var targetLink = menuTab.filter(function (x) { return x.dataset.tab === nama; })[0];
@@ -99,6 +218,15 @@
     if ($("#remah-halaman")) $("#remah-halaman").textContent = judul;
     document.title = judul + " · KOMPAK";
 
+    if (navTabWrapper && navTabWrapper.classList.contains("mobile-open")) {
+      navTabWrapper.classList.remove("mobile-open");
+      if (mobileMenuBtn) {
+        mobileMenuBtn.setAttribute("aria-expanded", "false");
+        var ic = mobileMenuBtn.querySelector("i");
+        if (ic) ic.className = "ri-menu-line";
+      }
+    }
+
     if (nama === "pengujian") tampilkanPengujian();
   }
 
@@ -112,7 +240,6 @@
     });
   });
 
-  // Expose retest function
   window.KOMPAK_APP_RETEST = function () {
     tampilkanPengujian();
     showToast("Pengujian selesai dijalankan.");
@@ -121,21 +248,24 @@
   // ---------- Pengelompokan Indikator (Cognitive Chunking) ----------
   var kategoriList = [
     {
+      id: "fase1",
       nama: "Fase 1: Perangkat Keras & Booting",
       ikon: "ri-computer-line",
-      deskripsi: "Pemeriksaan fisik saat komputer dihidupkan, suhu casing, kipas pendingin, dan periferal input/output.",
+      deskripsi: "Pemeriksaan fisik saat PC dinyalakan, suhu casing, kipas, layar, serta keyboard & mouse.",
       kodes: ["I1", "I2", "I3", "I4"]
     },
     {
+      id: "fase2",
       nama: "Fase 2: Performa & Penyimpanan",
       ikon: "ri-hard-drive-2-line",
-      deskripsi: "Kecukupan RAM untuk menjalankan IDE dan compiler, serta kesehatan S.M.A.R.T drive.",
+      deskripsi: "Kecukupan kapasitas RAM (≥ 8 GB) dan kesehatan S.M.A.R.T drive di CrystalDiskInfo.",
       kodes: ["I5", "I6"]
     },
     {
-      nama: "Fase 3: Perangkat Lunak Pemrograman & Keamanan",
+      id: "fase3",
+      nama: "Fase 3: Software Pemrograman & Keamanan",
       ikon: "ri-code-s-slash-line",
-      deskripsi: "VS Code dan ekstensinya, compiler/runtime (Python, C++, Java, JavaScript), XAMPP, dan proteksi malware.",
+      deskripsi: "VS Code & ekstensi, compiler/runtime (Python, C++, Java, JS), XAMPP, serta pemindaian antivirus.",
       kodes: ["I7", "I8", "I9", "I10"]
     }
   ];
@@ -144,9 +274,10 @@
   if (wadah) {
     wadah.innerHTML = "";
 
-    kategoriList.forEach(function (kat, katIdx) {
+    kategoriList.forEach(function (kat) {
       var katSection = document.createElement("section");
       katSection.className = "category-section";
+      katSection.id = "section-" + kat.id;
       katSection.setAttribute("aria-label", kat.nama);
 
       var katHeader = document.createElement("div");
@@ -157,7 +288,7 @@
           '<div><h3 class="category-name">' + esc(kat.nama) + '</h3>' +
           '<p class="category-desc">' + esc(kat.deskripsi) + '</p></div>' +
         '</div>' +
-        '<span class="category-count-badge">' + kat.kodes.length + ' Indikator</span>';
+        '<span class="category-count-badge" id="badge-' + kat.id + '">0/' + kat.kodes.length + ' terisi</span>';
 
       var katGrid = document.createElement("div");
       katGrid.className = "category-grid";
@@ -179,14 +310,35 @@
                  '<span class="' + kelas + '">' + esc(p.label) + "</span></label>";
         }).join("");
 
+        var extraCli = "";
+        if (ind.kode === "I8") {
+          extraCli =
+            '<div class="cli-helper" aria-label="Klik perintah untuk menyalin">' +
+              '<span class="cli-helper-label">Cek cepat terminal (klik untuk salin):</span>' +
+              '<div class="cli-helper-chips">' +
+                '<button type="button" class="cli-chip" data-cli="python --version">python --version</button>' +
+                '<button type="button" class="cli-chip" data-cli="g++ --version">g++ --version</button>' +
+                '<button type="button" class="cli-chip" data-cli="java -version">java -version</button>' +
+                '<button type="button" class="cli-chip" data-cli="node -v">node -v</button>' +
+              '</div>' +
+            '</div>';
+        }
+
+        var ikonInd = IKON_INDIKATOR[ind.kode] || "ri-checkbox-blank-circle-line";
         el.innerHTML =
           '<div class="atas">' +
-            '<span class="kode">' + ind.kode + '</span>' +
-            '<div><h3 id="judul-' + ind.kode + '">' + esc(ind.nama) + "</h3>" +
-            '<p class="petunjuk" id="petunjuk-' + ind.kode + '">' + esc(ind.petunjuk) + "</p></div>" +
+            '<span class="kode"><i class="' + ikonInd + '" aria-hidden="true"></i> ' + ind.kode + '</span>' +
+            '<div class="atas-teks">' +
+              '<div class="atas-judul-row">' +
+                '<h3 id="judul-' + ind.kode + '">' + esc(ind.nama) + '</h3>' +
+                '<span class="ind-state-pill belum" id="state-' + ind.kode + '">Belum dipilih</span>' +
+              '</div>' +
+              '<p class="petunjuk" id="petunjuk-' + ind.kode + '">' + esc(ind.petunjuk) + '</p>' +
+            '</div>' +
           '</div>' +
-          '<div class="pilihan">' + pil + "</div>" +
-          '<p class="pesan-salah" id="salah-' + ind.kode + '" hidden><i class="ri-error-warning-line"></i> Belum diisi. Silakan pilih salah satu opsi.</p>';
+          extraCli +
+          '<div class="pilihan">' + pil + '</div>' +
+          '<p class="pesan-salah" id="salah-' + ind.kode + '" hidden><i class="ri-error-warning-line"></i> Belum diisi. Silakan pilih salah satu opsi di atas.</p>';
 
         katGrid.appendChild(el);
       });
@@ -195,14 +347,28 @@
       katSection.appendChild(katGrid);
       wadah.appendChild(katSection);
     });
+
+    // Click-to-copy CLI helper chips on I8
+    wadah.addEventListener("click", function (e) {
+      var chip = e.target.closest("[data-cli]");
+      if (!chip) return;
+      var cmd = chip.dataset.cli;
+      salinTeks(cmd, 'Perintah "' + cmd + '" disalin ke clipboard!');
+    });
   }
 
-  function tandaiGalat(kode, ada) {
+  var faktaIlegal = {};
+
+  function tandaiGalat(kode, ada, pesanKhusus) {
     var k = document.getElementById("kartu-" + kode);
     if (!k) return;
     k.classList.toggle("salah", ada);
     var pesanEl = document.getElementById("salah-" + kode);
-    if (pesanEl) pesanEl.hidden = !ada;
+    if (pesanEl) {
+      pesanEl.hidden = !ada;
+      pesanEl.innerHTML = '<i class="ri-error-warning-line"></i> ' +
+        esc(pesanKhusus || "Belum diisi. Silakan pilih salah satu opsi di atas.");
+    }
     k.setAttribute("aria-describedby", "petunjuk-" + kode + (ada ? " salah-" + kode : ""));
     [].forEach.call(k.querySelectorAll("input"), function (r) {
       if (ada) r.setAttribute("aria-invalid", "true"); else r.removeAttribute("aria-invalid");
@@ -217,29 +383,89 @@
     var fakta = {};
     KB.indikator.forEach(function (ind) {
       var t = document.querySelector('input[name="' + ind.kode + '"]:checked');
-      fakta[ind.kode] = t ? t.value : "";
+      if (t) fakta[ind.kode] = t.value;
+      else if (faktaIlegal[ind.kode] !== undefined) fakta[ind.kode] = faktaIlegal[ind.kode];
+      else fakta[ind.kode] = "";
     });
     return fakta;
+  }
+
+  // Update visual state of each card & phase progress
+  function perbaruiStatusKartu() {
+    KB.indikator.forEach(function (ind) {
+      var k = document.getElementById("kartu-" + ind.kode);
+      var st = document.getElementById("state-" + ind.kode);
+      if (!k || !st) return;
+
+      k.classList.remove("terisi-normal", "terisi-peringatan", "terisi-parah");
+      var checked = document.querySelector('input[name="' + ind.kode + '"]:checked');
+
+      if (!checked) {
+        if (faktaIlegal[ind.kode] !== undefined) {
+          k.classList.add("terisi-parah");
+          st.className = "ind-state-pill parah";
+          st.textContent = "Nilai ilegal: " + faktaIlegal[ind.kode];
+        } else {
+          st.className = "ind-state-pill belum";
+          st.textContent = "Belum dipilih";
+        }
+        return;
+      }
+
+      var optSpan = checked.nextElementSibling;
+      if (optSpan && optSpan.classList.contains("parah")) {
+        k.classList.add("terisi-parah");
+        st.className = "ind-state-pill parah";
+        st.textContent = "Kritis";
+      } else if (optSpan && optSpan.classList.contains("tidak-normal")) {
+        k.classList.add("terisi-peringatan");
+        st.className = "ind-state-pill peringatan";
+        st.textContent = "Perhatian";
+      } else {
+        k.classList.add("terisi-normal");
+        st.className = "ind-state-pill normal";
+        st.textContent = "Normal";
+      }
+    });
+
+    kategoriList.forEach(function (kat) {
+      var badge = document.getElementById("badge-" + kat.id);
+      if (!badge) return;
+      var terisi = kat.kodes.filter(function (kode) {
+        return !!document.querySelector('input[name="' + kode + '"]:checked') || faktaIlegal[kode] !== undefined;
+      }).length;
+      var penuh = terisi === kat.kodes.length;
+      badge.classList.toggle("lengkap", penuh);
+      badge.textContent = penuh ? (terisi + "/" + kat.kodes.length + " Lengkap ✓") : (terisi + "/" + kat.kodes.length + " terisi");
+    });
   }
 
   // Progres Pengisian Real-Time
   function perbaruiProgres() {
     var n = 0;
     KB.indikator.forEach(function (ind) {
-      if (document.querySelector('input[name="' + ind.kode + '"]:checked')) n++;
+      if (document.querySelector('input[name="' + ind.kode + '"]:checked') || faktaIlegal[ind.kode] !== undefined) n++;
     });
 
     var pct = Math.round((n / KB.indikator.length) * 100);
     var teksProg = $("#teks-progres");
     var isiProg = $("#isi-progres");
     var pctProg = $("#progres-persen");
+    var btnPeriksa = $("#btn-periksa");
 
-    if (teksProg) teksProg.textContent = n + " dari " + KB.indikator.length + " indikator terisi";
+    if (teksProg) {
+      teksProg.textContent = n === KB.indikator.length
+        ? "Semua 10 indikator siap dianalisis!"
+        : (n + " dari " + KB.indikator.length + " indikator terisi");
+    }
     if (isiProg) isiProg.style.width = pct + "%";
     if (pctProg) pctProg.textContent = pct + "%";
 
     var progWrap = $(".progres");
     if (progWrap) progWrap.classList.toggle("penuh", n === KB.indikator.length);
+    if (btnPeriksa) btnPeriksa.classList.toggle("siap", n === KB.indikator.length);
+
+    perbaruiStatusKartu();
   }
 
   // Deteksi Perubahan Masukan (Stale Result)
@@ -253,6 +479,14 @@
   }
 
   function isiFakta(fakta) {
+    faktaIlegal = {};
+    KB.indikator.forEach(function (ind) {
+      var val = fakta[ind.kode];
+      if (val !== undefined && val !== null && val !== "") {
+        var cocok = ind.pilihan.some(function (p) { return p.nilai === val; });
+        if (!cocok) faktaIlegal[ind.kode] = val;
+      }
+    });
     document.querySelectorAll('#daftar-indikator input[type="radio"]').forEach(function (r) {
       r.checked = fakta[r.name] === r.value;
     });
@@ -264,19 +498,47 @@
   if (wadah) {
     wadah.addEventListener("change", function (e) {
       var kartu = e.target.closest(".indikator");
-      if (kartu) tandaiGalat(kartu.id.replace("kartu-", ""), false);
+      if (kartu) {
+        var kd = kartu.id.replace("kartu-", "");
+        delete faktaIlegal[kd];
+        tandaiGalat(kd, false);
+      }
       perbaruiProgres();
       perbaruiBasi();
     });
   }
 
+  // Lompat ke indikator pertama yang belum diisi
+  var btnLompatKosong = $("#btn-lompat-kosong");
+  if (btnLompatKosong) {
+    btnLompatKosong.addEventListener("click", function () {
+      var kosong = KB.indikator.filter(function (ind) {
+        return !document.querySelector('input[name="' + ind.kode + '"]:checked');
+      })[0];
+      if (!kosong) {
+        showToast("Semua 10 indikator sudah terisi! Klik Periksa Kelayakan.");
+        var btnP = $("#btn-periksa");
+        if (btnP) btnP.focus();
+        return;
+      }
+      fokusKartu(kosong.kode);
+      showToast("Menuju indikator " + kosong.kode + " (" + kosong.nama + ")");
+    });
+  }
+
   // ---------- Mode Demo & Preset Cepat ----------
   var bannerOtomatis = $("#banner-otomatis");
+  var bannerOtomatisTeks = $("#banner-otomatis-teks");
   var pilihContoh = $("#pilih-contoh");
+
+  function tampilkanBannerInfo(htmlPesan) {
+    if (!bannerOtomatis) return;
+    if (bannerOtomatisTeks && htmlPesan) bannerOtomatisTeks.innerHTML = htmlPesan;
+    bannerOtomatis.hidden = false;
+  }
 
   if (pilihContoh) {
     UJI.skenario.forEach(function (s) {
-      if (s.id === "S10") return; // S10 data di luar pilihan sah (hanya untuk uji mesin)
       var o = document.createElement("option");
       o.value = s.id;
       o.textContent = s.id + " · " + s.jenis + " — " + s.uraian;
@@ -287,13 +549,12 @@
       var s = UJI.skenario.filter(function (x) { return x.id === pilihContoh.value; })[0];
       if (s) {
         isiFakta(s.fakta);
-        if (bannerOtomatis) bannerOtomatis.hidden = false;
-        showToast("Skenario " + s.id + " (" + (s.harapan.status || "Uji") + ") dimuat.");
+        tampilkanBannerInfo('<b>Skenario ' + esc(s.id) + ' (' + esc(s.uraian) + ') dimuat.</b> Tekan <b>Periksa Kelayakan</b> untuk melihat kesimpulan mesin inferensi.');
+        showToast("Skenario " + s.id + " dimuat. Klik Periksa Kelayakan.");
       }
     });
   }
 
-  // Quick Preset Pills Listener
   $$("[data-skenario]").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var sid = btn.dataset.skenario;
@@ -301,8 +562,8 @@
       if (s) {
         isiFakta(s.fakta);
         if (pilihContoh) pilihContoh.value = sid;
-        if (bannerOtomatis) bannerOtomatis.hidden = false;
-        showToast("Preset " + sid + " (" + s.harapan.status + ") aktif.");
+        tampilkanBannerInfo('<b>Simulasi ' + esc(s.id) + ' (' + esc(s.uraian) + ') dimuat.</b> Tekan tombol <b>Periksa Kelayakan</b> untuk melihat hasilnya.');
+        showToast("Simulasi " + sid + " dimuat. Klik Periksa Kelayakan.");
       }
     });
   });
@@ -312,12 +573,12 @@
     btnNormal.addEventListener("click", function () {
       isiFakta(UJI.NORMAL);
       if (pilihContoh) pilihContoh.value = "S1";
-      if (bannerOtomatis) bannerOtomatis.hidden = false;
-      showToast("Semua indikator diset normal (K1).");
+      tampilkanBannerInfo('<b>Semua indikator diset kondisi normal.</b> Ubah bagian yang bermasalah bila ada, lalu tekan <b>Periksa Kelayakan</b>.');
+      showToast("Semua 10 indikator diset normal.");
     });
   }
 
-  // ---------- Hasil: Keadaan Kosong (Empty State) ----------
+  // ---------- Hasil: Keadaan Kosong (Empty State Edukatif) ----------
   function kosongkanHasil() {
     terakhir = null;
     var panelHasil = $("#hasil");
@@ -335,12 +596,19 @@
             '<div class="radar-circle circle-2"></div>' +
             '<i class="ri-radar-line"></i>' +
           '</div>' +
-          '<h3 class="kosong-title">Menunggu Analisis</h3>' +
-          '<p class="kosong-sub">Pilih opsi pada 10 indikator di sebelah kiri, lalu tekan <b>Periksa Kelayakan</b> untuk memulai inferensi penalaran maju.</p>' +
+          '<h3 class="kosong-title">Siap Menganalisis PC</h3>' +
+          '<p class="kosong-sub">Lengkapi 10 indikator di sebelah kiri lalu tekan <b>Periksa Kelayakan</b>. Hasil status, aturan pendukung, dan checklist tindakan akan muncul di sini.</p>' +
+          '<div class="kosong-legend">' +
+            '<div class="kl-title">Arti 4 Status Kelayakan:</div>' +
+            '<div class="kl-row"><span class="label hijau">✓ K1</span><span>Layak pakai langsung</span></div>' +
+            '<div class="kl-row"><span class="label kuning">! K2</span><span>Layak dgn perbaikan ringan</span></div>' +
+            '<div class="kl-row"><span class="label merah">✕ K3</span><span>Tidak layak sementara (perbaiki)</span></div>' +
+            '<div class="kl-row"><span class="label ungu">↻ K4</span><span>Tidak layak, usul peremajaan</span></div>' +
+          '</div>' +
           '<div class="kosong-features">' +
-            '<div class="kf-item"><i class="ri-check-line"></i> Evaluasi ' + KB.aturan.length + ' Aturan IF–THEN</div>' +
-            '<div class="kf-item"><i class="ri-shield-keyhole-line"></i> Resolusi Konflik K3 › K4 › K2 › K1</div>' +
-            '<div class="kf-item"><i class="ri-file-list-3-line"></i> Rekomendasi Tindakan Laboran</div>' +
+            '<div class="kf-item"><i class="ri-check-line"></i> Evaluasi ' + KB.aturan.length + ' Aturan IF–THEN Pakar</div>' +
+            '<div class="kf-item"><i class="ri-shield-keyhole-line"></i> Prioritas Konflik: K3 › K4 › K2 › K1</div>' +
+            '<div class="kf-item"><i class="ri-file-list-3-line"></i> Checklist Tindakan Praktis Laboran</div>' +
           '</div>' +
         '</div>';
     }
@@ -383,6 +651,24 @@
       "<code>" + esc(MESIN.teksAturan(r, KB)) + "</code></div>";
   }
 
+  function ringkasanTemuan(fakta) {
+    var temuan = [];
+    KB.indikator.forEach(function (ind) {
+      var val = fakta[ind.kode];
+      var pil = ind.pilihan.filter(function (p) { return p.nilai === val; })[0];
+      var idx = ind.pilihan.indexOf(pil);
+      if (pil && idx !== 0 && !pil.normal) {
+        temuan.push({
+          kode: ind.kode,
+          nama: ind.nama,
+          label: pil.label,
+          parah: !!nilaiParah[ind.kode + ":" + pil.nilai]
+        });
+      }
+    });
+    return temuan;
+  }
+
   function tampilkanHasil(h, nomor, fakta) {
     var el = $("#isi-hasil");
     var panelHasil = $("#hasil");
@@ -392,18 +678,24 @@
     if (warnBasi) warnBasi.hidden = true;
     if (el) el.classList.remove("basi");
 
-    // Jika masukan belum valid (ada yang kosong)
+    // Jika masukan belum valid
     if (!h.valid) {
       terakhir = null;
-      h.galat.forEach(function (g) { tandaiGalat(g.kode, true); });
+      h.galat.forEach(function (g) { tandaiGalat(g.kode, true, g.pesan); });
+
+      var adaIlegal = Object.keys(faktaIlegal).length > 0;
+      var judulGalat = adaIlegal ? "Masukan Ditolak (Nilai Tidak Valid)" : (h.galat.length + " Indikator Belum Diisi");
+      var subGalat = adaIlegal
+        ? "Sistem menolak nilai di luar pilihan indikator yang ditetapkan. Perbaiki indikator berikut:"
+        : "Klik item di bawah untuk langsung menuju indikator yang masih kosong:";
 
       if (el) {
         el.innerHTML =
           '<div class="galat-card">' +
             '<div class="galat-header">' +
               '<div class="galat-icon"><i class="ri-alert-fill"></i></div>' +
-              '<div><h2>Pemeriksaan Belum Lengkap</h2>' +
-              '<p>Lengkapi opsi pengamatan pada indikator berikut sebelum sistem menarik kesimpulan:</p></div>' +
+              '<div><h2>' + esc(judulGalat) + '</h2>' +
+              '<p>' + esc(subGalat) + '</p></div>' +
             '</div>' +
             '<ul class="galat-list">' +
               h.galat.map(function (g) {
@@ -413,7 +705,7 @@
           '</div>';
       }
       fokusKartu(h.galat[0].kode);
-      showToast(h.galat.length + " indikator perlu dilengkapi.");
+      showToast(adaIlegal ? "Masukan ditolak: nilai di luar pilihan." : (h.galat.length + " indikator perlu dilengkapi."));
       return;
     }
 
@@ -434,41 +726,66 @@
         '<p class="waktu"><i class="ri-time-line"></i> Diperiksa pada ' + esc(waktuTampil(sekarang)) + '</p>' +
       '</div></div>';
 
-    // 2. Tindakan yang Disarankan (Action Checklist)
+    // 2. Snapshot Temuan Tidak Normal (Memudahkan Laboran)
+    var temuan = ringkasanTemuan(fakta);
     html += '<div class="bagian">' +
-      '<h3><i class="ri-checkbox-line"></i> TINDAKAN YANG DISARANKAN</h3>' +
+      '<h3><i class="ri-eye-line"></i> RINGKASAN TEMUAN PENGAMATAN</h3>';
+    if (temuan.length) {
+      html += '<div class="temuan-chips">' +
+        temuan.map(function (t) {
+          return '<span class="temuan-chip ' + (t.parah ? "parah" : "peringatan") + '">' +
+            '<b>' + t.kode + '</b> ' + esc(t.nama) + ': ' + esc(t.label) + '</span>';
+        }).join("") +
+      '</div>';
+    } else {
+      html += '<div class="temuan-normal-box"><i class="ri-checkbox-circle-line"></i> Seluruh 10 indikator berada pada kondisi normal.</div>';
+    }
+    html += '</div>';
+
+    // 3. Tindakan yang Disarankan (Checklist Interaktif)
+    html += '<div class="bagian">' +
+      '<div class="bagian-head-row">' +
+        '<h3><i class="ri-checkbox-line"></i> TINDAKAN YANG DISARANKAN</h3>' +
+        '<span class="tindakan-progress" id="tindakan-progress">0/' + h.tindakan.length + ' selesai</span>' +
+      '</div>' +
       '<ul class="tindakan">' +
-        h.tindakan.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") +
+        h.tindakan.map(function (t, idx) {
+          return '<li><label class="tindakan-check-label">' +
+            '<input type="checkbox" class="tindakan-cb" data-idx="' + idx + '">' +
+            '<span class="tindakan-box" aria-hidden="true"><i class="ri-check-line"></i></span>' +
+            '<span class="tindakan-text">' + esc(t) + '</span>' +
+          '</label></li>';
+        }).join("") +
       '</ul></div>';
 
-    // 3. Tombol Aksi Cepat
+    // 4. Tombol Aksi Cepat
     html += '<div class="bagian aksi-hasil">' +
       '<button type="button" class="tombol utama" data-aksi="berikutnya" title="Simpan hasil dan siapkan formulir untuk nomor PC selanjutnya">' +
         '<i class="ri-add-line"></i><span>Periksa PC Berikutnya</span>' +
       '</button>' +
       '<button type="button" class="tombol sekunder" data-aksi="cetak" title="Cetak formulir diagnosis resmi laboratorium">' +
-        '<i class="ri-printer-line"></i><span>Cetak Hasil</span>' +
+        '<i class="ri-printer-line"></i><span>Cetak</span>' +
       '</button>' +
       '<button type="button" class="tombol sekunder" data-aksi="salin" title="Salin ringkasan teks diagnosis ke clipboard">' +
         '<i class="ri-file-copy-line"></i><span>Salin</span>' +
       '</button>' +
     '</div>';
 
-    // 4. Mengapa Status Ini? (Explainable AI)
+    // 5. Mengapa Status Ini? (Explainable AI)
     html += '<div class="bagian">' +
-      '<h3><i class="ri-questionnaire-line"></i> MENGAPA STATUS INI? (ATURAN PEMENANG)</h3>';
+      '<h3><i class="ri-questionnaire-line"></i> MENGAPA STATUS INI? (ATURAN PENDUKUNG)</h3>';
     if (h.pemenang.length) {
       html += h.pemenang.map(function (r) { return kartuAturan(r, false); }).join("");
     } else {
       html += '<p class="arahan">Kombinasi observasi ini belum terdefinisi pada basis pengetahuan sehingga forward chaining tidak menarik asumsi sembarangan.</p>';
     }
-    if (h.antara.length) {
+    if (h.antara && h.antara.length) {
       html += '<p class="category-desc">Fakta antara yang diturunkan lebih dulu dan dipakai aturan lain:</p>' +
         h.antara.map(function (r) { return kartuAturan(r, false); }).join("");
     }
     html += '</div>';
 
-    // 5. Resolusi Konflik (Bila Beberapa Aturan Terpicu)
+    // 6. Resolusi Konflik
     if (h.konflik) {
       html += '<div class="bagian">' +
         '<h3><i class="ri-shield-keyhole-line"></i> RESOLUSI KONFLIK PRIORITAS</h3>' +
@@ -478,9 +795,9 @@
       '</div>';
     }
 
-    // 6. Jejak Forward Chaining (Inference Trace)
+    // 7. Jejak Forward Chaining
     var siklusTerpicu = {};
-    h.jejak.forEach(function (j) { siklusTerpicu[j.aturan] = j.siklus; });
+    (h.jejak || []).forEach(function (j) { siklusTerpicu[j.aturan] = j.siklus; });
 
     html += '<div class="bagian">' +
       '<details class="jejak">' +
@@ -509,13 +826,25 @@
     var kartu = document.getElementById("kartu-" + kode);
     if (!kartu) return;
     gulirKe(kartu, "center");
+    kartu.classList.add("sorot");
+    setTimeout(function () { kartu.classList.remove("sorot"); }, 1200);
     var r = kartu.querySelector("input");
     if (r) r.focus({ preventScroll: true });
   }
 
-  // Delegasi Klik pada Panel Hasil
+  // Delegasi Klik & Checklist pada Panel Hasil
   var panelHasil = $("#hasil");
   if (panelHasil) {
+    panelHasil.addEventListener("change", function (e) {
+      if (!e.target.classList.contains("tindakan-cb")) return;
+      var li = e.target.closest("li");
+      if (li) li.classList.toggle("selesai", e.target.checked);
+      var all = $$("#isi-hasil .tindakan-cb");
+      var done = all.filter(function (c) { return c.checked; }).length;
+      var progEl = $("#tindakan-progress");
+      if (progEl) progEl.textContent = done + "/" + all.length + " selesai";
+    });
+
     panelHasil.addEventListener("click", function (e) {
       var fokus = e.target.closest("[data-fokus]");
       if (fokus) { fokusKartu(fokus.dataset.fokus); return; }
@@ -538,11 +867,11 @@
 
     var statusJudul = hasilEl.querySelector(".status h2");
     var statusNama = statusJudul ? statusJudul.textContent : "";
-    var tindakanItems = $$("#isi-hasil .tindakan li").map(function (li, idx) {
-      return (idx + 1) + ". " + li.textContent;
+    var tindakanItems = $$("#isi-hasil .tindakan .tindakan-text").map(function (el, idx) {
+      return (idx + 1) + ". " + el.textContent;
     }).join("\n");
 
-    var teks = "📋 LAPORAN KELAYAKAN KOMPUTER (KOMPAK)\n" +
+    var teks = "LAPORAN KELAYAKAN KOMPUTER (KOMPAK)\n" +
       "-------------------------------------------\n" +
       "Nomor PC : " + nomor + "\n" +
       "Status   : " + statusNama + "\n" +
@@ -552,19 +881,7 @@
       "-------------------------------------------\n" +
       "Teknik Komputer UNM · Sistem Pakar Forward Chaining";
 
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(teks).then(function () {
-        showToast("Ringkasan berhasil disalin ke clipboard!");
-      });
-    } else {
-      var ta = document.createElement("textarea");
-      ta.value = teks;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      showToast("Ringkasan berhasil disalin ke clipboard!");
-    }
+    salinTeks(teks, "Ringkasan berhasil disalin ke clipboard!");
   }
 
   // Print Handling
@@ -734,7 +1051,8 @@
       tabelAturan.innerHTML = tabel(["Aturan", "IF (Kondisi Fakta)", "THEN", "Dasar Alasan Teknis"],
         KB.aturan.map(function (r) {
           var jika = r.id === "R12" ? "Semua indikator bernilai normal" : MESIN.teksKondisi(r.kondisi, KB);
-          return ["<b>" + r.id + "</b>", "<code>" + esc(jika) + "</code>", r.hasilkan ? "<code>" + esc(r.hasilkan.fakta + " = " + r.hasilkan.nilai) + "</code>" : labelStatus(KB.kesimpulan[r.maka]), esc(r.alasan)];
+          var maka = r.hasilkan ? "<code>" + esc(r.hasilkan.fakta + " = " + r.hasilkan.nilai) + "</code>" : labelStatus(KB.kesimpulan[r.maka]);
+          return ["<b>" + r.id + "</b>", "<code>" + esc(jika) + "</code>", maka, esc(r.alasan)];
         }));
     }
 
@@ -757,7 +1075,7 @@
 
     var tabelUji = $("#tabel-uji");
     if (tabelUji) {
-      tabelUji.innerHTML = tabel(["No", "Klasifikasi", "Kondisi Uji (Lainnya Normal)", "Hasil Diharapkan", "Hasil Inferensi", "Verifikasi"],
+      tabelUji.innerHTML = tabel(["No", "Klasifikasi", "Kondisi Uji (Lainnya Normal)", "Target Pakar", "Hasil Inferensi", "Verifikasi"],
         hasil.map(function (h) {
           return [
             "<b>" + h.id + "</b>",
