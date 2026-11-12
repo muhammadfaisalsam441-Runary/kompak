@@ -2,7 +2,7 @@
 
 Sistem pakar berbasis web untuk menentukan **kelayakan komputer laboratorium pemrograman sebelum praktikum** (VS Code, Python, C++, Java, JavaScript, dan XAMPP).
 Asisten lab mengisi 10 indikator hasil pengamatan; sistem menarik kesimpulan dengan **forward chaining**
-atas 12 aturan IF–THEN, lalu menampilkan status, aturan pendukung, dan tindakan yang disarankan.
+atas 13 aturan IF–THEN (12 aturan kesimpulan dan 1 aturan fakta antara), lalu menampilkan status, aturan pendukung, dan tindakan yang disarankan.
 
 Tugas Proyek Kecerdasan Buatan 2026 · Teknik Komputer UNM.
 
@@ -13,13 +13,12 @@ Tidak perlu instalasi, server, database, atau koneksi internet.
 1. Buka folder `kompak`.
 2. Klik dua kali `index.html` (terbuka di Chrome / Edge / Firefox).
 3. Isi 10 indikator, lalu tekan **Periksa kelayakan**.
-   Untuk demo cepat, pilih salah satu skenario di menu **Isi cepat dari skenario uji**.
+   Untuk demo cepat, klik salah satu tombol di bagian **Mode demo** atau pilih dari **Daftar Skenario Lengkap**.
 
 Alur untuk memeriksa banyak PC: setelah hasil muncul, tekan **Periksa PC berikutnya** (nomor PC bertambah otomatis).
 Semua pemeriksaan tercatat di tabel **Riwayat** dan bisa diekspor ke CSV (pemisah titik koma, cocok untuk Excel berlokal Indonesia).
-Menu **Isi cepat dari skenario uji** ada di bagian *Mode demo* yang dilipat.
 
-Menjalankan 10 skenario uji dari terminal (opsional, perlu [Node.js](https://nodejs.org)):
+Menjalankan semua skenario uji dari terminal (opsional, perlu [Node.js](https://nodejs.org)):
 
 ```
 node uji-node.js
@@ -43,9 +42,9 @@ Tidak ada pustaka/framework pihak ketiga; seluruh logika ditulis dengan JavaScri
 kompak/
 ├── index.html                 Halaman aplikasi (3 tab: Periksa PC, Basis pengetahuan, Pengujian)
 ├── css/style.css              Tampilan
-├── js/basis-pengetahuan.js    BASIS PENGETAHUAN: indikator, kesimpulan, 12 aturan, sumber
+├── js/basis-pengetahuan.js    BASIS PENGETAHUAN: indikator, kesimpulan, 13 aturan, sumber
 ├── js/mesin-inferensi.js      MESIN INFERENSI: validasi, forward chaining, resolusi konflik
-├── js/skenario-uji.js         10 skenario uji + fungsi pembanding hasil
+├── js/skenario-uji.js         17 skenario uji + fungsi pembanding hasil
 ├── js/app.js                  Antarmuka (menghubungkan formulir dengan mesin inferensi)
 ├── uji-node.js                Menjalankan pengujian dari terminal
 └── README.md
@@ -59,8 +58,9 @@ Basis pengetahuan dipisah dari mesin inferensi: untuk menambah atau mengubah atu
 1. **Validasi** — semua 10 indikator wajib terisi dan nilainya harus salah satu pilihan yang sah.
    Jika tidak, masukan ditolak dan indikator yang bermasalah ditandai merah.
 2. **Pencocokan** — fakta dimasukkan ke memori kerja; setiap aturan dicek kondisinya (mendukung AND/OR bersarang).
-3. **Pemicuan** — aturan yang cocok dipicu dan kesimpulannya ditambahkan ke memori kerja.
-   Siklus diulang sampai tidak ada aturan baru yang terpicu.
+3. **Pemicuan** — aturan yang cocok dipicu dan hasilnya ditambahkan ke memori kerja.
+   R13 menghasilkan fakta antara `SPEK = kurang`; R8 dan R9 memakai fakta itu, sehingga baru terpicu
+   pada siklus berikutnya. Siklus diulang sampai tidak ada aturan baru yang terpicu.
 4. **Resolusi konflik** — jika beberapa aturan terpicu, dipilih status terberat: **K3 › K4 › K2 › K1**.
 5. **Tidak ada aturan cocok** — hasil "Belum dapat disimpulkan", disarankan pemeriksaan manual oleh teknisi.
 6. **Penjelasan** — aplikasi menampilkan aturan pendukung, aturan yang kalah prioritas, tindakan,
@@ -104,11 +104,12 @@ Basis pengetahuan dipisah dari mesin inferensi: untuk menambah atau mengubah atu
 | R5 | I7 = Tidak terpasang/error OR I8 = Tidak terpasang | K3 |
 | R6 | I9 = Gagal dijalankan | K3 |
 | R7 | I10 = Terdeteksi | K3 |
-| R8 | (I5 = Kurang OR I6 = Peringatan) AND I1 = Lambat | K4 |
-| R9 | (I5 = Kurang OR I6 = Peringatan) AND I1 = Normal | K2 |
+| R8 | SPEK = kurang AND I1 = Lambat | K4 |
+| R9 | SPEK = kurang AND I1 = Normal | K2 |
 | R10 | I7 = Ekstensi kurang OR I8 = PATH OR I9 = Port bentrok | K2 |
 | R11 | I2 = Panas/berisik OR I3 = Bergaris OR I4 = Sebagian | K2 |
 | R12 | Semua indikator normal (XAMPP boleh tidak dipakai atau berjalan) | K1 |
+| R13 | I5 = Kurang OR I6 = Peringatan | SPEK = kurang (fakta antara) |
 
 ### Sumber pengetahuan
 
@@ -128,15 +129,25 @@ Basis pengetahuan dipisah dari mesin inferensi: untuk menambah atau mengubah atu
 | S2 | Umum | I8 = Tidak dikenali di terminal (PATH) | K2 (R10) | K2 (R10) | Sesuai |
 | S3 | Umum | I1 = Gagal | K3 (R1) | K3 (R1) | Sesuai |
 | S4 | Umum | I8 = Tidak terpasang | K3 (R5) | K3 (R5) | Sesuai |
-| S5 | Umum | I5 = Kurang, I1 = Lambat | K4 (R8) | K4 (R8) | Sesuai |
-| S6 | Batas | I5 = Kurang, I6 = Peringatan, I1 = Normal | K2 (R9) | K2 (R9) | Sesuai |
+| S5 | Umum | I5 = Kurang, I1 = Lambat | K4 (R8) | K4 (R13 → R8) | Sesuai |
+| S6 | Batas | I5 = Kurang, I6 = Peringatan, I1 = Normal | K2 (R9) | K2 (R13 → R9) | Sesuai |
 | S7 | Konflik | I5 = Kurang, I1 = Lambat, I10 = Terdeteksi | K3 (R7) | K3 (R7 menang atas R8) | Sesuai |
 | S8 | Tanpa aturan | I1 = Lambat saja | Belum dapat disimpulkan | Belum dapat disimpulkan | Sesuai |
 | S9 | Tidak valid | I8 kosong | Pesan validasi | Ditolak: I8 belum diisi | Sesuai |
 | S10 | Tidak valid | I1 = "rusak_parah" | Masukan ditolak | Ditolak: nilai tidak dikenal | Sesuai |
+| S11 | Umum | I2 = Mati mendadak | K3 (R2) | K3 (R2) | Sesuai |
+| S12 | Umum | I4 = Tidak berfungsi | K3 (R3) | K3 (R3) | Sesuai |
+| S13 | Umum | I6 = Buruk | K3 (R4) | K3 (R4) | Sesuai |
+| S14 | Umum | I9 = Gagal dijalankan | K3 (R6) | K3 (R6) | Sesuai |
+| S15 | Umum | I3 = Bergaris | K2 (R11) | K2 (R11) | Sesuai |
+| S16 | Batas | I6 = Peringatan saja, I1 = Normal | K2 (R9) | K2 (R13 → R9) | Sesuai |
+| S17 | Konflik | I5 = Kurang, I1 = Lambat, I8 = PATH | K4 (R8) | K4 (R8 menang atas R10) | Sesuai |
 
-Kesesuaian: **10/10 (100%)** terhadap hasil yang diharapkan pada skenario di atas.
-Kesimpulan ini hanya berlaku untuk skenario yang diuji.
+Kesesuaian: **17/17 (100%)** terhadap hasil yang diharapkan pada skenario di atas. Setiap aturan R1–R13
+terpicu pada sedikitnya satu skenario. Kesimpulan ini hanya berlaku untuk skenario yang diuji.
+
+Hasil yang diharapkan diturunkan dari basis aturan, jadi angka 100% menunjukkan mesin menjalankan aturan
+dengan benar, bukan bahwa aturannya sudah sesuai penilaian teknisi.
 
 ## Keterbatasan
 
@@ -150,6 +161,6 @@ Kesimpulan ini hanya berlaku untuk skenario yang diuji.
 
 | Nama | NIM | Kontribusi |
 |---|---|---|
-| Muhammad Faisal Sam | | |
-| A. Abd. Samad Faqih H | | |
+| Muhammad Faisal Sam | 250210500027 | |
+| A. Abd. Samad Faqih H | 250210500039 | |
 | Khaeril | 250210500006 | |

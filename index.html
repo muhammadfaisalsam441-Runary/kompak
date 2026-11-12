@@ -36,7 +36,6 @@
         <div class="brand-text-group">
           <div class="brand-title-wrap">
             <span class="brand-name">KOMPAK</span>
-            <span class="brand-badge">v2.4 PRO</span>
           </div>
           <p class="brand-subtitle">Analisis Kelayakan Komputer Praktikum</p>
         </div>
@@ -60,7 +59,7 @@
           <li>
             <a href="#pengujian" data-tab="pengujian">
               <i class="ri-flask-line"></i>
-              <span>Pengujian AI</span>
+              <span>Pengujian</span>
             </a>
           </li>
         </ul>
@@ -68,10 +67,6 @@
 
       <!-- Header Right Meta -->
       <div class="header-right">
-        <div class="engine-status-pill" title="Mesin Forward Chaining 12 Aturan siap memproses fakta">
-          <span class="status-dot-pulse"></span>
-          <span>Forward Chaining Siap</span>
-        </div>
         <div class="academic-badge">
           <span>Teknik Komputer UNM</span>
         </div>
@@ -150,7 +145,7 @@
           <label class="demo-select-label" for="pilih-contoh">
             <span>Daftar Skenario Lengkap:</span>
             <select id="pilih-contoh" class="form-select-sm">
-              <option value="">— Pilih skenario uji (S1–S10) —</option>
+              <option value="">— Pilih skenario uji —</option>
             </select>
           </label>
           <button type="button" id="tombol-normal" class="btn-ghost-sm">
@@ -346,8 +341,8 @@
       <!-- 12 Aturan IF-THEN -->
       <div class="card-box">
         <div class="card-box-body">
-          <h4 style="margin: 0 0 6px; font-weight: 800;">12 Basis Aturan Inferensi (R1–R12)</h4>
-          <p class="category-desc" style="margin-bottom: 14px;">Aturan IF–THEN yang dievaluasi secara forward chaining pada memori kerja.</p>
+          <h4 style="margin: 0 0 6px; font-weight: 800;">13 Aturan IF–THEN (R1–R13)</h4>
+          <p class="category-desc" style="margin-bottom: 14px;">R1–R12 menghasilkan kesimpulan. R13 menghasilkan fakta antara <code>SPEK = kurang</code> yang dipakai R8 dan R9, sehingga keduanya baru terpicu pada siklus berikutnya.</p>
           <div id="tabel-aturan"></div>
         </div>
       </div>
@@ -355,8 +350,8 @@
       <!-- Sumber Pengetahuan & Rujukan -->
       <div class="card-box">
         <div class="card-box-body">
-          <h4 style="margin: 0 0 6px; font-weight: 800;">Sumber Pengetahuan &amp; Rujukan Ilmiah</h4>
-          <p class="category-desc" style="margin-bottom: 14px;">Akuisisi pengetahuan diperoleh dari wawancara laboran teknisi serta jurnal rujukan terakreditasi:</p>
+          <h4 style="margin: 0 0 6px; font-weight: 800;">Sumber Pengetahuan &amp; Rujukan</h4>
+          <p class="category-desc" style="margin-bottom: 14px;">Aturan disusun dari sumber berikut. Ambang RAM 8 GB dan booting 3 menit ditetapkan kelompok dan masih perlu dikonfirmasi laboran.</p>
           <ol id="daftar-sumber" class="sumber"></ol>
         </div>
       </div>
@@ -371,7 +366,7 @@
       <div class="test-hero-card">
         <div class="test-hero-info">
           <h2>Evaluasi &amp; Validasi Forward Chaining</h2>
-          <p>Pengujian 10 skenario uji (kasus normal, batas spesifikasi, konflik prioritas, masukan tanpa aturan, dan data tidak valid) untuk memverifikasi konsistensi inferensi sistem pakar.</p>
+          <p>Skenario uji mencakup kondisi umum, kondisi batas, konflik prioritas, masukan tanpa aturan, dan masukan tidak valid. Hasil sistem dibandingkan dengan hasil yang diharapkan menurut basis aturan.</p>
         </div>
         <div id="ringkasan-uji" class="ringkasan-uji" aria-live="polite"></div>
       </div>
@@ -380,8 +375,8 @@
         <div class="card-box-body">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <div>
-              <h4 style="margin: 0 0 4px; font-weight: 800;">Matriks Hasil Pengujian (10 Skenario)</h4>
-              <p class="category-desc">Setiap skenario dievaluasi langsung oleh mesin inferensi dan diverifikasi terhadap harapan pakar.</p>
+              <h4 style="margin: 0 0 4px; font-weight: 800;">Hasil Pengujian per Skenario</h4>
+              <p class="category-desc">Setiap skenario dijalankan langsung oleh mesin inferensi saat tab ini dibuka.</p>
             </div>
             <button type="button" class="btn-ghost-sm" id="btn-retest" onclick="window.KOMPAK_APP_RETEST &amp;&amp; window.KOMPAK_APP_RETEST()">
               <i class="ri-refresh-line"></i> Jalankan Ulang

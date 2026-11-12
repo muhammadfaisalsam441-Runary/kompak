@@ -1,9 +1,10 @@
 /*
- * KOMPAK — 10 Skenario Uji (Laboratorium Pemrograman)
+ * KOMPAK — Skenario Uji (Laboratorium Pemrograman)
  * ---------------------------------------------------------------
  * Setiap skenario: indikator yang tidak disebut bernilai NORMAL.
  * harapan.status   : kode kesimpulan yang diharapkan ("-" = belum dapat disimpulkan)
  * harapan.aturan   : aturan yang diharapkan menjadi dasar kesimpulan
+ * Hasil yang diharapkan diturunkan dari basis aturan (bukan penilaian pakar per skenario).
  * harapan.valid    : false jika masukan seharusnya ditolak
  */
 (function (root) {
@@ -43,7 +44,21 @@
     { id: "S9", jenis: "Tidak valid", uraian: "I8 tidak diisi (kosong)",
       fakta: dengan({ I8: undefined }), harapan: { valid: false } },
     { id: "S10", jenis: "Tidak valid", uraian: "I1 = \"rusak_parah\" (di luar pilihan)",
-      fakta: dengan({ I1: "rusak_parah" }), harapan: { valid: false } }
+      fakta: dengan({ I1: "rusak_parah" }), harapan: { valid: false } },
+    { id: "S11", jenis: "Umum", uraian: "I2 = Mati mendadak",
+      fakta: dengan({ I2: "mati" }), harapan: { valid: true, status: "K3", aturan: ["R2"] } },
+    { id: "S12", jenis: "Umum", uraian: "I4 = Keyboard/mouse tidak berfungsi",
+      fakta: dengan({ I4: "tidak_berfungsi" }), harapan: { valid: true, status: "K3", aturan: ["R3"] } },
+    { id: "S13", jenis: "Umum", uraian: "I6 = Penyimpanan buruk",
+      fakta: dengan({ I6: "buruk" }), harapan: { valid: true, status: "K3", aturan: ["R4"] } },
+    { id: "S14", jenis: "Umum", uraian: "I9 = XAMPP gagal dijalankan",
+      fakta: dengan({ I9: "gagal" }), harapan: { valid: true, status: "K3", aturan: ["R6"] } },
+    { id: "S15", jenis: "Umum", uraian: "I3 = Monitor bergaris",
+      fakta: dengan({ I3: "bergaris" }), harapan: { valid: true, status: "K2", aturan: ["R11"] } },
+    { id: "S16", jenis: "Batas", uraian: "I6 = Peringatan saja, I1 = Normal",
+      fakta: dengan({ I6: "peringatan" }), harapan: { valid: true, status: "K2", aturan: ["R9"] } },
+    { id: "S17", jenis: "Konflik", uraian: "I5 = RAM < 8 GB, I1 = Lambat, I8 = PATH",
+      fakta: dengan({ I5: "kurang", I1: "lambat", I8: "path" }), harapan: { valid: true, status: "K4", aturan: ["R8"] } }
   ];
 
   // Jalankan semua skenario dan bandingkan dengan harapan.

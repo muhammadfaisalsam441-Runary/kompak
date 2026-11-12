@@ -915,10 +915,10 @@ code, .mono {
   outline-offset: 2px;
 }
 
-/* Selected State: NORMAL (Green) */
+/* Selected State: NORMAL (Green) — warna -text supaya teks putih lolos kontras 4,5:1 */
 .pilihan input:checked + span {
-  background: var(--status-k1);
-  border-color: var(--status-k1);
+  background: var(--status-k1-text);
+  border-color: var(--status-k1-text);
   color: #ffffff;
   font-weight: 600;
   box-shadow: 0 3px 8px var(--status-k1-glow);
@@ -932,8 +932,8 @@ code, .mono {
 
 /* Selected State: WARNING / ABNORMAL (Amber) */
 .pilihan input:checked + span.tidak-normal {
-  background: var(--status-k2);
-  border-color: var(--status-k2);
+  background: var(--status-k2-text);
+  border-color: var(--status-k2-text);
   color: #ffffff;
   box-shadow: 0 3px 8px var(--status-k2-glow);
 }
@@ -1941,6 +1941,13 @@ tbody tr:hover td {
   color: var(--text-body);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 /* -------------------------------------------------------------------------
    13. RESPONSIVE DESIGN (MOBILE & TABLET)
    ------------------------------------------------------------------------- */
@@ -1970,8 +1977,27 @@ tbody tr:hover td {
     display: none;
   }
 
+  /* Menu tab turun ke baris kedua supaya tidak tergencet di layar sempit. */
+  .app-header,
+  .header-container {
+    height: auto;
+  }
+
+  .header-container {
+    flex-wrap: wrap;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    gap: 10px;
+  }
+
   .nav-tab-wrapper {
+    order: 3;
+    flex: 1 1 100%;
     overflow-x: auto;
+  }
+
+  .progres {
+    flex: none;
   }
 
   .main-wrapper {

@@ -5,7 +5,8 @@
  *   1. validasi()   : pastikan semua indikator terisi dan nilainya sah.
  *   2. inferensi()  : forward chaining — cocokkan fakta di memori kerja
  *                     dengan setiap aturan; aturan yang cocok "dipicu"
- *                     dan kesimpulannya ditambahkan ke memori kerja.
+ *                     dan hasilnya (fakta antara atau kesimpulan) ditambahkan
+ *                     ke memori kerja, sehingga bisa memicu aturan lain.
  *                     Diulang sampai tidak ada aturan baru yang terpicu.
  *   3. Resolusi konflik: jika beberapa aturan terpicu dengan kesimpulan
  *                     berbeda, ambil kesimpulan dengan prioritas tertinggi
@@ -56,7 +57,8 @@
 
   function teksAturan(aturan, kb) {
     if (aturan.id === "R12") return "IF semua indikator normal THEN " + aturan.maka;
-    return "IF " + teksKondisi(aturan.kondisi, kb) + " THEN " + aturan.maka;
+    var maka = aturan.hasilkan ? aturan.hasilkan.fakta + " = " + aturan.hasilkan.nilai : aturan.maka;
+    return "IF " + teksKondisi(aturan.kondisi, kb) + " THEN " + maka;
   }
 
   function cariIndikator(kb, kode) {
@@ -70,9 +72,9 @@
       return { valid: false, galat: cek.galat };
     }
 
-    // Memori kerja diisi fakta awal.
+    // Memori kerja diisi fakta awal (hanya indikator; fakta antara tidak boleh disuntik dari luar).
     var memori = {};
-    Object.keys(fakta).forEach(function (k) { memori[k] = fakta[k]; });
+    kb.indikator.forEach(function (i) { memori[i.kode] = fakta[i.kode]; });
 
     var terpicu = [];        // aturan yang terpicu (urut sesuai waktu terpicu)
     var sudah = {};          // penanda aturan yang sudah dipicu
@@ -85,31 +87,37 @@
       kb.aturan.forEach(function (r) {
         if (sudah[r.id]) return;
         var hasil = cocok(r.kondisi, memori);
-        if (siklus === 1) jejak.push({ siklus: siklus, aturan: r.id, cocok: hasil });
         if (hasil) {
           sudah[r.id] = true;
           terpicu.push(r);
-          memori["kesimpulan_" + r.id] = r.maka;   // fakta baru di memori kerja
+          jejak.push({ siklus: siklus, aturan: r.id });
+          // Fakta baru di memori kerja: fakta antara (dipakai aturan lain) atau kesimpulan.
+          if (r.hasilkan) memori[r.hasilkan.fakta] = r.hasilkan.nilai;
+          else memori["kesimpulan_" + r.id] = r.maka;
           adaBaru = true;
         }
       });
     }
 
+    // Aturan fakta antara tidak ikut menentukan status.
+    var antara = terpicu.filter(function (r) { return r.hasilkan; });
+    var penyimpul = terpicu.filter(function (r) { return !r.hasilkan; });
+
     // ---------- 4. Tidak ada aturan cocok ----------
-    if (terpicu.length === 0) {
+    if (penyimpul.length === 0) {
       return {
-        valid: true, status: kb.belumDisimpulkan, terpicu: [], pemenang: [],
+        valid: true, status: kb.belumDisimpulkan, terpicu: terpicu, pemenang: [], kalah: [], antara: antara,
         tindakan: kb.belumDisimpulkan.tindakanUmum.slice(), jejak: jejak, siklus: siklus, konflik: false
       };
     }
 
     // ---------- 3. Resolusi konflik ----------
-    var status = terpicu
+    var status = penyimpul
       .map(function (r) { return kb.kesimpulan[r.maka]; })
       .reduce(function (a, b) { return b.prioritas > a.prioritas ? b : a; });
 
-    var pemenang = terpicu.filter(function (r) { return r.maka === status.kode; });
-    var kalah = terpicu.filter(function (r) { return r.maka !== status.kode; });
+    var pemenang = penyimpul.filter(function (r) { return r.maka === status.kode; });
+    var kalah = penyimpul.filter(function (r) { return r.maka !== status.kode; });
 
     // Tindakan = tindakan umum status + tindakan spesifik semua aturan terpicu.
     var tindakan = status.tindakanUmum.slice();
@@ -118,7 +126,7 @@
     });
 
     return {
-      valid: true, status: status, terpicu: terpicu, pemenang: pemenang, kalah: kalah,
+      valid: true, status: status, terpicu: terpicu, pemenang: pemenang, kalah: kalah, antara: antara,
       konflik: kalah.length > 0, tindakan: tindakan, jejak: jejak, siklus: siklus
     };
   }

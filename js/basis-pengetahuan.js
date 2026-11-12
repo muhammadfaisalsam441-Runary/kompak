@@ -8,13 +8,17 @@
  * Isi:
  *   1. indikator  : 10 fakta masukan beserta pilihan nilainya
  *   2. kesimpulan : 4 status kelayakan + prioritas resolusi konflik
- *   3. aturan     : 12 aturan IF–THEN
+ *   3. aturan     : 12 aturan kesimpulan + 1 aturan fakta antara (R13)
  *   4. sumber     : sumber pengetahuan
  *
  * Format kondisi aturan (bisa bersarang):
  *   { fakta: "I1", nilai: "gagal" }        -> I1 = gagal
  *   { semua: [kondisi, kondisi, ...] }     -> AND
  *   { salahSatu: [kondisi, kondisi, ...] } -> OR
+ *
+ * Aturan biasanya berakhir pada kesimpulan (`maka: "K3"`). Aturan dengan
+ * `hasilkan` tidak menyimpulkan apa pun; ia menambah FAKTA ANTARA ke memori
+ * kerja yang lalu dipakai aturan lain (inilah rantai forward chaining).
  *
  * Pilihan pertama setiap indikator adalah kondisi NORMAL. Pilihan lain
  * yang juga normal diberi tanda `normal: true` (contoh: XAMPP berjalan).
@@ -123,10 +127,10 @@
     { id: "R7", maka: "K3", kondisi: f("I10", "terdeteksi"),
       alasan: "Antivirus mendeteksi ancaman.",
       tindakan: ["Putuskan dari jaringan, karantina ancaman, lalu pindai ulang."] },
-    { id: "R8", maka: "K4", kondisi: { semua: [ { salahSatu: [f("I5", "kurang"), f("I6", "peringatan")] }, f("I1", "lambat") ] },
+    { id: "R8", maka: "K4", kondisi: { semua: [ f("SPEK", "kurang"), f("I1", "lambat") ] },
       alasan: "Spesifikasi kurang (RAM/penyimpanan) dan sudah berdampak pada booting yang lambat.",
       tindakan: ["Usulkan tambah RAM atau ganti HDD ke SSD."] },
-    { id: "R9", maka: "K2", kondisi: { semua: [ { salahSatu: [f("I5", "kurang"), f("I6", "peringatan")] }, f("I1", "normal") ] },
+    { id: "R9", maka: "K2", kondisi: { semua: [ f("SPEK", "kurang"), f("I1", "normal") ] },
       alasan: "Spesifikasi mulai kurang, tetapi kinerja booting masih normal.",
       tindakan: ["Tutup aplikasi berat saat praktikum; masukkan ke daftar calon peremajaan."] },
     { id: "R10", maka: "K2", kondisi: { salahSatu: [f("I7", "ekstensi_kurang"), f("I8", "path"), f("I9", "port_bentrok")] },
@@ -146,6 +150,15 @@
         : { salahSatu: normal.map(function (p) { return f(i.kode, p.nilai); }) };
     }) },
     alasan: "Semua indikator berada pada kondisi normal.",
+    tindakan: []
+  });
+
+  // R13: fakta antara. Sengaja diletakkan setelah R8/R9 supaya terlihat bahwa
+  // R8/R9 baru bisa terpicu pada siklus berikutnya, setelah SPEK ada di memori kerja.
+  aturan.push({
+    id: "R13", hasilkan: f("SPEK", "kurang"),
+    kondisi: { salahSatu: [f("I5", "kurang"), f("I6", "peringatan")] },
+    alasan: "RAM di bawah kebutuhan atau penyimpanan mulai bermasalah berarti spesifikasi kurang.",
     tindakan: []
   });
 

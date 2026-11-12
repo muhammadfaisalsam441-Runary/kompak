@@ -115,7 +115,7 @@
   // Expose retest function
   window.KOMPAK_APP_RETEST = function () {
     tampilkanPengujian();
-    showToast("Pengujian 10 skenario selesai dijalankan.");
+    showToast("Pengujian selesai dijalankan.");
   };
 
   // ---------- Pengelompokan Indikator (Cognitive Chunking) ----------
@@ -338,7 +338,7 @@
           '<h3 class="kosong-title">Menunggu Analisis</h3>' +
           '<p class="kosong-sub">Pilih opsi pada 10 indikator di sebelah kiri, lalu tekan <b>Periksa Kelayakan</b> untuk memulai inferensi penalaran maju.</p>' +
           '<div class="kosong-features">' +
-            '<div class="kf-item"><i class="ri-check-line"></i> Evaluasi 12 Aturan IF–THEN Pakar</div>' +
+            '<div class="kf-item"><i class="ri-check-line"></i> Evaluasi ' + KB.aturan.length + ' Aturan IF–THEN</div>' +
             '<div class="kf-item"><i class="ri-shield-keyhole-line"></i> Resolusi Konflik K3 › K4 › K2 › K1</div>' +
             '<div class="kf-item"><i class="ri-file-list-3-line"></i> Rekomendasi Tindakan Laboran</div>' +
           '</div>' +
@@ -462,6 +462,10 @@
     } else {
       html += '<p class="arahan">Kombinasi observasi ini belum terdefinisi pada basis pengetahuan sehingga forward chaining tidak menarik asumsi sembarangan.</p>';
     }
+    if (h.antara.length) {
+      html += '<p class="category-desc">Fakta antara yang diturunkan lebih dulu dan dipakai aturan lain:</p>' +
+        h.antara.map(function (r) { return kartuAturan(r, false); }).join("");
+    }
     html += '</div>';
 
     // 5. Resolusi Konflik (Bila Beberapa Aturan Terpicu)
@@ -475,8 +479,8 @@
     }
 
     // 6. Jejak Forward Chaining (Inference Trace)
-    var adaYangCocok = {};
-    h.terpicu.forEach(function (r) { adaYangCocok[r.id] = true; });
+    var siklusTerpicu = {};
+    h.jejak.forEach(function (j) { siklusTerpicu[j.aturan] = j.siklus; });
 
     html += '<div class="bagian">' +
       '<details class="jejak">' +
@@ -484,9 +488,9 @@
           h.terpicu.length + " dari " + KB.aturan.length + " aturan terpicu dalam " + h.siklus + " siklus)</summary>" +
         tabel(["Aturan", "Kondisi", "Terpicu?"], KB.aturan.map(function (r) {
           return ["<b>" + r.id + "</b>", "<code>" + esc(MESIN.teksAturan(r, KB)) + "</code>",
-            adaYangCocok[r.id] ? '<span class="ya">✓ Cocok</span>' : '<span class="tidak">Tidak</span>'];
+            siklusTerpicu[r.id] ? '<span class="ya">✓ Siklus ' + siklusTerpicu[r.id] + '</span>' : '<span class="tidak">Tidak</span>'];
         }), true) +
-        '<p class="meta">Siklus forward chaining berhenti saat tidak ada fakta baru yang dihasilkan pada memori kerja.</p>' +
+        '<p class="meta">Aturan yang terpicu menambah fakta ke memori kerja. Siklus terakhir tidak memicu aturan baru, sehingga penalaran berhenti.</p>' +
       '</details></div>';
 
     html += '</div>';
@@ -727,10 +731,10 @@
 
     var tabelAturan = $("#tabel-aturan");
     if (tabelAturan) {
-      tabelAturan.innerHTML = tabel(["Aturan", "IF (Kondisi Fakta)", "THEN (Kesimpulan)", "Dasar Alasan Teknis"],
+      tabelAturan.innerHTML = tabel(["Aturan", "IF (Kondisi Fakta)", "THEN", "Dasar Alasan Teknis"],
         KB.aturan.map(function (r) {
           var jika = r.id === "R12" ? "Semua indikator bernilai normal" : MESIN.teksKondisi(r.kondisi, KB);
-          return ["<b>" + r.id + "</b>", "<code>" + esc(jika) + "</code>", labelStatus(KB.kesimpulan[r.maka]), esc(r.alasan)];
+          return ["<b>" + r.id + "</b>", "<code>" + esc(jika) + "</code>", r.hasilkan ? "<code>" + esc(r.hasilkan.fakta + " = " + r.hasilkan.nilai) + "</code>" : labelStatus(KB.kesimpulan[r.maka]), esc(r.alasan)];
         }));
     }
 
@@ -753,7 +757,7 @@
 
     var tabelUji = $("#tabel-uji");
     if (tabelUji) {
-      tabelUji.innerHTML = tabel(["No", "Klasifikasi", "Kondisi Uji (Lainnya Normal)", "Target Pakar", "Hasil Inferensi", "Verifikasi"],
+      tabelUji.innerHTML = tabel(["No", "Klasifikasi", "Kondisi Uji (Lainnya Normal)", "Hasil Diharapkan", "Hasil Inferensi", "Verifikasi"],
         hasil.map(function (h) {
           return [
             "<b>" + h.id + "</b>",
