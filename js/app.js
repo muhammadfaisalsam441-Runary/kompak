@@ -333,7 +333,7 @@
           '<div class="kosong-radar">' +
             '<div class="radar-circle circle-1"></div>' +
             '<div class="radar-circle circle-2"></div>' +
-            '<i class="ri-pulse-line"></i>' +
+            '<i class="ri-radar-line"></i>' +
           '</div>' +
           '<h3 class="kosong-title">Menunggu Analisis</h3>' +
           '<p class="kosong-sub">Pilih opsi pada 10 indikator di sebelah kiri, lalu tekan <b>Periksa Kelayakan</b> untuk memulai inferensi penalaran maju.</p>' +
@@ -480,7 +480,7 @@
 
     html += '<div class="bagian">' +
       '<details class="jejak">' +
-        '<summary><i class="ri-node-tree"></i> Lihat Jejak Penalaran Forward Chaining (' +
+        '<summary><i class="ri-git-branch-line"></i> Lihat Jejak Penalaran Forward Chaining (' +
           h.terpicu.length + " dari " + KB.aturan.length + " aturan terpicu dalam " + h.siklus + " siklus)</summary>" +
         tabel(["Aturan", "Kondisi", "Terpicu?"], KB.aturan.map(function (r) {
           return ["<b>" + r.id + "</b>", "<code>" + esc(MESIN.teksAturan(r, KB)) + "</code>",
