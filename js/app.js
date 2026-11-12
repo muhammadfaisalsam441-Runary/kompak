@@ -75,6 +75,7 @@
     })(r.kondisi);
   });
 
+<<<<<<< HEAD
   // ---------- Navigasi Tab Modern ----------
   var tautanTab = $$("[data-tab]");
   var menuTab = tautanTab.filter(function (x) { return x.closest(".menu-tab"); });
@@ -102,13 +103,47 @@
     if (nama === "pengujian") tampilkanPengujian();
   }
 
+=======
+  // ---------- Tinggi topbar (dipakai CSS untuk posisi panel hasil yang menempel) ----------
+  var kepala = $(".kepala");
+  function ukurKepala() { document.documentElement.style.setProperty("--kepala-h", kepala.offsetHeight + "px"); }
+  ukurKepala();
+  window.addEventListener("resize", ukurKepala);
+  if (window.ResizeObserver) new ResizeObserver(ukurKepala).observe(kepala);
+
+  // ---------- Navigasi halaman (menu sidebar template) ----------
+  var tautanTab = [].slice.call(document.querySelectorAll("[data-tab]"));
+  var menuTab = tautanTab.filter(function (x) { return x.closest(".menu-tab"); });
+  function aktifkanTab(nama) {
+    var b = menuTab.filter(function (x) { return x.dataset.tab === nama; })[0];
+    if (!b) return;
+    menuTab.forEach(function (x) {
+      var on = x === b;
+      x.classList.toggle("aktif", on);
+      x.closest("li").classList.toggle("menuitem-active", on);
+      if (on) x.setAttribute("aria-current", "page"); else x.removeAttribute("aria-current");
+    });
+    document.querySelectorAll(".panel-tab").forEach(function (p) {
+      p.classList.toggle("aktif", p.id === "tab-" + nama);
+    });
+    var judul = b.textContent.trim();
+    $("#judul-halaman").textContent = judul;
+    $("#remah-halaman").textContent = judul;
+    document.title = judul + " · KOMPAK";
+    if (nama === "pengujian") tampilkanPengujian();
+  }
+>>>>>>> 9cd74c6128c1e6e671be78d1f5211fe6c7bc6dfd
   tautanTab.forEach(function (b) {
     b.addEventListener("click", function (e) {
       e.preventDefault();
       aktifkanTab(b.dataset.tab);
       window.scrollTo({ top: 0, behavior: kurangiGerak() ? "auto" : "smooth" });
+<<<<<<< HEAD
       var utama = $("#utama");
       if (utama) utama.focus({ preventScroll: true });
+=======
+      $("#utama").focus({ preventScroll: true });
+>>>>>>> 9cd74c6128c1e6e671be78d1f5211fe6c7bc6dfd
     });
   });
 
@@ -766,5 +801,8 @@
         }));
     }
   }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9cd74c6128c1e6e671be78d1f5211fe6c7bc6dfd
 })();
