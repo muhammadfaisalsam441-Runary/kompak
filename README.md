@@ -44,7 +44,7 @@ kompak/
 ├── css/style.css              Tampilan
 ├── js/basis-pengetahuan.js    BASIS PENGETAHUAN: indikator, kesimpulan, 13 aturan, sumber
 ├── js/mesin-inferensi.js      MESIN INFERENSI: validasi, forward chaining, resolusi konflik
-├── js/skenario-uji.js         17 skenario uji + fungsi pembanding hasil
+├── js/skenario-uji.js         10 skenario uji sesuai proposal + fungsi pembanding hasil
 ├── js/app.js                  Antarmuka (menghubungkan formulir dengan mesin inferensi)
 ├── uji-node.js                Menjalankan pengujian dari terminal
 └── README.md
@@ -135,16 +135,8 @@ Basis pengetahuan dipisah dari mesin inferensi: untuk menambah atau mengubah atu
 | S8 | Tanpa aturan | I1 = Lambat saja | Belum dapat disimpulkan | Belum dapat disimpulkan | Sesuai |
 | S9 | Tidak valid | I8 kosong | Pesan validasi | Ditolak: I8 belum diisi | Sesuai |
 | S10 | Tidak valid | I1 = "rusak_parah" | Masukan ditolak | Ditolak: nilai tidak dikenal | Sesuai |
-| S11 | Umum | I2 = Mati mendadak | K3 (R2) | K3 (R2) | Sesuai |
-| S12 | Umum | I4 = Tidak berfungsi | K3 (R3) | K3 (R3) | Sesuai |
-| S13 | Umum | I6 = Buruk | K3 (R4) | K3 (R4) | Sesuai |
-| S14 | Umum | I9 = Gagal dijalankan | K3 (R6) | K3 (R6) | Sesuai |
-| S15 | Umum | I3 = Bergaris | K2 (R11) | K2 (R11) | Sesuai |
-| S16 | Batas | I6 = Peringatan saja, I1 = Normal | K2 (R9) | K2 (R13 → R9) | Sesuai |
-| S17 | Konflik | I5 = Kurang, I1 = Lambat, I8 = PATH | K4 (R8) | K4 (R8 menang atas R10) | Sesuai |
 
-Kesesuaian: **17/17 (100%)** terhadap hasil yang diharapkan pada skenario di atas. Setiap aturan R1–R13
-terpicu pada sedikitnya satu skenario. Kesimpulan ini hanya berlaku untuk skenario yang diuji.
+Kesesuaian: **10/10 (100%)** terhadap hasil yang diharapkan pada 10 skenario uji proposal (S1–S10). Kesimpulan ini hanya berlaku untuk skenario yang diuji.
 
 Hasil yang diharapkan diturunkan dari basis aturan, jadi angka 100% menunjukkan mesin menjalankan aturan
 dengan benar, bukan bahwa aturannya sudah sesuai penilaian teknisi.
